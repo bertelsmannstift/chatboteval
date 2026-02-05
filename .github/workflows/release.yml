@@ -1,0 +1,37 @@
+name: Release (Build Only)
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+env:
+  UV_VERSION: "0.9.30"
+  PYTHON_VERSION: "3.12"
+
+jobs:
+  build:
+    name: Build Python package
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up uv
+      uses: astral-sh/setup-uv@v7
+      with:
+        version: ${{ env.UV_VERSION }}
+        enable-cache: true
+        cache-dependency-glob: "uv.lock"
+
+    - name: Set up Python
+      run: uv python install ${{ env.PYTHON_VERSION }}
+
+    - name: Build package
+      run: uv build
+
+    - name: Check build artifacts
+      run: |
+        echo "Built files:"
+        ls -l dist/

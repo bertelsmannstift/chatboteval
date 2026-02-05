@@ -1,0 +1,26 @@
+# Byte-compiled
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+.venv/
+env/
+venv/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Testing / linting / type checking cache
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# IDE settings
+.idea/
+*.iml
+.jbeval/
+
+# OS
+.DS_Store

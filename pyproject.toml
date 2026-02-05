@@ -1,0 +1,46 @@
+[project]
+name = "chatboteval"
+version = "0.0.1"
+description = "Evaluation framework and annotation interface for RAG chatbots"
+authors =[
+  { name = "Sascha Göbel", email = "goebel@hertie-school.org" },
+  { name = "Henry Baker" },
+  { name = "Luis Fernando Ramírez Ruiz" },
+]
+readme = "README.md"
+license = { file = "LICENSE.md" }
+requires-python = ">=3.12"
+dependencies = []
+
+[project.optional-dependencies]
+test = [
+    "pytest>=9.0",
+]
+lint = [
+    "ruff>=0.14",
+]
+type = [
+    "mypy>=1.19",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "D"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+ignore-var-parameters = true
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+ignore_missing_imports = true
+disallow_any_generics = false
+warn_return_any = false
