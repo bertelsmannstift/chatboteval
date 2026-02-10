@@ -4,7 +4,7 @@ version = "0.0.1"
 description = "Evaluation framework and annotation interface for RAG chatbots"
 authors =[
   { name = "Sascha Göbel", email = "goebel@hertie-school.org" },
-  { name = "Henry Baker" },
+  { name = "Henry Baker", email =  "h.baker@hertie-school.org" },
   { name = "Luis Fernando Ramírez Ruiz" },
 ]
 readme = "README.md"
