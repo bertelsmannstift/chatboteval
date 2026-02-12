@@ -1,4 +1,4 @@
-# 0003: Storage Format
+# 0005: Storage Format
 
 Status: Draft
 

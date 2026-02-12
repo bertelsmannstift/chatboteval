@@ -1,7 +1,5 @@
 # Glossary
 
-- **BF** — Bertelsmann Foundation (project collaborator and pilot deployment site).
-
 - **Inter-annotator agreement (IAA)** — Measure of consistency between independent annotators (e.g., Cohen's kappa, Krippendorff's alpha).
 
 - **Annotation interface** — Web-based UI where domain experts label query-response pairs (powered by Argilla).

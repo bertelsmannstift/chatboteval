@@ -5,12 +5,14 @@ Status: Accepted
 
 ## Decision
 
-Use **Argilla v2.8.0** as the annotation platform for human labelling of RAG chatbot query-response pairs.
+Use **Argilla** as the annotation platform for human labelling of RAG chatbot query-response pairs.
 
 
 ## Context
 
-Need an annotation platform for 5-10 domain experts to label chatbot responses across multiple dimensions (correctness, grounding, relevance, harm/bias, etc). Must be self-hosted (GDPR), support task assignment and structured export, and deploy within the pilot timeline.
+Need an annotation platform for domain experts to label chatbot responses across multiple dimensions (correctness, grounding, relevance, harm/bias, etc). Must be self-hosted (GDPR) and support task assignment and structured export.
+
+**Strategic preference:** Leverage existing turnkey tools rather than building custom frontends from scratch to minimise development and maintenance burden.
 
 **Alternatives considered:**
 
@@ -30,7 +32,7 @@ Need an annotation platform for 5-10 domain experts to label chatbot responses a
 **Trade-offs accepted:**
 
 - Infrastructure weight — requires Elasticsearch + PostgreSQL + Redis (mitigated by Docker Compose)
-- RAG UI needs CustomField HTML/CSS template (~0.5-1 day work)
+- RAG UI needs CustomField HTML/CSS template
 - Review workflow is programmatic via SDK (no click-through UI)
 
 
