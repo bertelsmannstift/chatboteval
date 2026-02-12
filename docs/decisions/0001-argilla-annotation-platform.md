@@ -10,7 +10,7 @@ Use **Argilla v2.8.0** as the annotation platform for human labelling of RAG cha
 
 ## Context
 
-Need an annotation platform for 5-10 domain experts to label chatbot responses across multiple dimensions (correctness, grounding, relevance, harm/bias). Must be self-hosted (GDPR), support task assignment and structured export, and deploy within the pilot timeline.
+Need an annotation platform for 5-10 domain experts to label chatbot responses across multiple dimensions (correctness, grounding, relevance, harm/bias, etc). Must be self-hosted (GDPR), support task assignment and structured export, and deploy within the pilot timeline.
 
 **Alternatives considered:**
 
@@ -36,7 +36,7 @@ Need an annotation platform for 5-10 domain experts to label chatbot responses a
 
 ## Consequences
 
-- Fast deployment (1-3 days vs 2-4 weeks custom build).
+- Fast deployment (cf custom build).
 - Turnkey features: user management, task distribution, IAA.
 - Python-native integration fits package architecture.
 - No feature paywall risk (unlike Label Studio Enterprise).

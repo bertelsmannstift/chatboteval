@@ -5,7 +5,7 @@ This directory contains living component design documents covering responsibilit
 Each design document focuses on:
 - **Responsibilities and boundaries** — What this component does and doesn't do
 - **Inputs/outputs (contracts)** — Data interfaces and APIs
-- **Failure modes / edge cases** — How things can break and how we handle it
+- **Failure modes / edge cases** — How things can/might break and how we handle it
 - **Links to relevant issues** — Active work and tracking
 
 ## Index
