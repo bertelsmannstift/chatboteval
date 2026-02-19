@@ -33,7 +33,7 @@ Defined over: query $q_i$ and the top-_K_ retrieved chunks $c_{ik}$, $k = 1, ...
 ```math
   \text{SufficiencyHit@K}
   =
-  \frac{1}{I}\sum_{i=1}^{I}\mathbb{I}\!\left(\sum_{k=1}^{K} s_{ik} \ge 1\right)
+  \frac{1}{I}\sum_{i=1}^{I}\left[\sum_{k=1}^{K} s_{ik} \ge 1\right]
 ```
 - **Sufficiency Rate@K:** 
   - Of the top-_K_ retrieved chunks, what fraction are individually sufficient evidence?
@@ -130,7 +130,7 @@ Defined over: answer $a_i$ and retrieved context set $C_i$
 ```math
   \text{GroundingErrorRate}
   =
-  \frac{1}{I}\sum_{i=1}^{I} \mathbb{I}\!\left(v_i + x_i \ge 1\right)
+  \frac{1}{I}\sum_{i=1}^{I}\left[v_i + x_i \ge 1\right]
 ```
 - **Citation Presence Rate:**
   - Share of answers that contain any citation marker.
