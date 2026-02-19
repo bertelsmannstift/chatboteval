@@ -40,8 +40,8 @@ For each pair ($𝑞_i$, $c_{ik}$), annotators must assign:
 ### Logical constraints
 
 The following consistency constraints apply:
-1. `evidence_sufficient` implies `topically_relevant`, i.e., `evidence_sufficient`$=1⇒$`topically_relevant`$=1$
-2. `evidence_sufficient` and `misleading` cannot co-occur, i.e., `evidence_sufficient`$=1⇒$`misleading`$=0$
+1. `evidence_sufficient` implies `topically_relevant`, i.e., `evidence_sufficient` $=1⇒$ `topically_relevant` $=1$
+2. `evidence_sufficient` and `misleading` cannot co-occur, i.e., `evidence_sufficient` $=1⇒$ `misleading` $=0$
 
 
 ## Task 2: Grounding annotation
@@ -71,8 +71,8 @@ For each pair ($a_i$, $C_{i}$), annotators must assign:
 ### Logical constraints
 
 The following consistency constraints apply:
-1. `contradicted_claim_present` implies `unsupported_claim_present`, i.e., `contradicted_claim_present`$=1⇒$`unsupported_claim_present`$=1$
-2. `fabricated_source` implies `source_cited`, i.e., `fabricated_source`$=1⇒$`source_cited`$=1$
+1. `contradicted_claim_present` implies `unsupported_claim_present`, i.e., `contradicted_claim_present` $=1⇒$ `unsupported_claim_present` $=1$
+2. `fabricated_source` implies `source_cited`, i.e., `fabricated_source` $=1⇒$ `source_cited` $=1$
 
 
 ## Task 3: Generation annotation

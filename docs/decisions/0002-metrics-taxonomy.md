@@ -22,39 +22,39 @@ Defined over: query $q_i$ and the top-$K$ retrieved chunks $c_{ik}$, $k = 1, ...
 - **Topical Precision@K:** 
   - Of the top-$K$ retrieved chunks, what fraction are topically relevant?
   - Connected label: `topically_relevant`, $t_{ik} \in \{0,1\}$
-  ```math
+```math
   \text{TopicalPrecision@K}
   \,=\,
   \frac{1}{I}\sum_{i=1}^{I}\left(\frac{1}{K}\sum_{k=1}^{K} t_{ik}\right)
-  ```
+```
 - **Sufficiency Hit@K:**
   - For what share of queries is there at least one sufficient-evidence chunk in the top-$K$?
   - Connected label: `evidence_sufficient`, $s_{ik} \in \{0,1\}$
-  ```math
+```math
   \text{SufficiencyHit@K}
   =
   \frac{1}{I}\sum_{i=1}^{I}\mathbb{I}\!\left(\sum_{k=1}^{K} s_{ik} \ge 1\right)
-  ```
+```
 - **Sufficiency Rate@K:** 
   - Of the top-$K$ retrieved chunks, what fraction are individually sufficient evidence?
   - Connected label: `evidence_sufficient`, $s_{ik} \in \{0,1\}$
-  ```math
+```math
   \text{SufficiencyRate@K}
   =
   \frac{1}{I}\sum_{i=1}^{I}\left(\frac{1}{K}\sum_{k=1}^{K} s_{ik}\right)
-  ```
+```
 - **Harmful Context Rate@K:** 
   - Of the top-$K$ retrieved chunks, what fraction are misleading (risk-inducing) context?
   - Connected label: `misleading`, $m_{ik} \in \{0,1\}$
-  ```math
+```math
   \text{HarmfulContextRate@K}
   =
   \frac{1}{I}\sum_{i=1}^{I}\left(\frac{1}{K}\sum_{k=1}^{K} m_{ik}\right)
-  ```
+ ```
 - **Mean Reciprocal Rank@K:**
   - How high in the ranking is the first topically relevant chunk?
   - Connected label: `topically_relevant`, $t_{ik} \in \{0,1\}$
-  ```math
+```math
   RR@K(i)
   =
   \begin{cases}
@@ -63,16 +63,16 @@ Defined over: query $q_i$ and the top-$K$ retrieved chunks $c_{ik}$, $k = 1, ...
   0 
   & \text{otherwise}
   \end{cases}
-  ```
-  ```math
+```
+```math
   \text{MRR@K}
   =
   \frac{1}{I}\sum_{i=1}^{I} RR@K(i)
-  ```
+```
 - **Normalized Discounted Cumulative Gain@K:** 
   - How well does the ranking prioritize highly relevant chunks?
   - Connected labels: grades derived from `topically_relevant` and `evidence_sufficient`
-  ```math
+```math
   w_{ik}
   =
   \begin{cases}
@@ -80,20 +80,20 @@ Defined over: query $q_i$ and the top-$K$ retrieved chunks $c_{ik}$, $k = 1, ...
   1 & \text{if } t_{ik}=1 \text{ and } s_{ik}=0\\
   0 & \text{otherwise}
   \end{cases}
-  ```
-  ```math
+```
+```math
   DCG@K(i)
   =
   \sum_{k=1}^{K}
   \frac{2^{w_{ik}}-1}{\log_2(k+1)}
-  ```
-  ```math
+```
+```math
   NDCG@K
   =
   \frac{1}{I}
   \sum_{i=1}^{I}
   \frac{DCG@K(i)}{IDCG@K(i)}
-  ```
+```
 
 ### 2) Grounding metrics
 
@@ -103,51 +103,51 @@ Defined over: answer $a_i$ and retrieved context set $C_i$
 - **Grounding Presence Rate:**
   - Share of answers for which at least one substantive claim is supported by the provided context.
   - Connected label: `support_present`, $g_i \in \{0,1\}$
-  ```math
+```math
   \text{GroundingPresenceRate}
   =
   \frac{1}{I}\sum_{i=1}^{I} g_i
-  ```
+```
 - **Unsupported Claim Rate:**
   - Share of answers containing at least one unsupported (hallucinated) substantive claim.
   - Connected label: `unsupported_claim_present`, $v_i \in \{0,1\}$
-  ```math
+```math
   \text{UnsupportedClaimRate}
   =
   \frac{1}{I}\sum_{i=1}^{I} v_i
-  ```
+```
 - **Contradiction Rate:**
   - Share of answers containing at least one claim contradicted by the provided context.
   - Connected label: `contradicted_claim_present`, $x_i \in \{0,1\}$
-  ```math
+```math
   \text{ContradictionRate}
   =
   \frac{1}{I}\sum_{i=1}^{I} x_i
-  ```
+```
 - **Grounding Error Rate:**
   - Share of answers with any grounding failure, i.e., at least one unsupported or contradicted claim.
   - Connected labels: `unsupported_claim_present`, $v_i \in \{0,1\}$; `contradicted_claim_present`, $x_i \in \{0,1\}$
-  ```math
+```math
   \text{GroundingErrorRate}
   =
   \frac{1}{I}\sum_{i=1}^{I} \mathbb{I}\!\left(v_i + x_i \ge 1\right)
-  ```
+```
 - **Citation Presence Rate:**
   - Share of answers that contain any citation marker.
   - Connected label: `source_cited`, $z_i \in \{0,1\}$
-  ```math
+```math
   \text{CitationPresenceRate}
   =
   \frac{1}{I}\sum_{i=1}^{I} z_i
-  ```
+```
 - **Conditional Fabrication Rate:**
   - Among answers that cite something, how often is at least one citation fabricated?
   - Connected labels: `source_cited`, $z_i \in \{0,1\}$; `fabricated_source`, $f_i \in \{0,1\}$
-  ```math
+```math
   \text{ConditionalFabricationRate}
   =
   \frac{\sum_{i=1}^{I} z_i f_i}{\sum_{i=1}^{I} z_i}
-  ```
+```
 
 ### 3) Generation metrics
 
@@ -157,43 +157,43 @@ Defined over: query $q_i$ and answer $a_i$
 - **Proper Action Rate:**
   - Share of answers where the model chose the appropriate action (e.g., answer / clarify / refuse) given the query and system constraints.
   - Connected label: `proper_action`, $d_i \in \{0,1\}$
-  ```math
+```math
   \text{ProperActionRate}
   =
   \frac{1}{I}\sum_{i=1}^{I} d_i
-  ```
+```
 - **On-Topic Rate:**
   - Share of answers that substantively address the user’s request.
   - Connected label: `response_on_topic`, $o_i \in \{0,1\}$
-  ```math
+```math
   \text{OnTopicRate}
   =
   \frac{1}{I}\sum_{i=1}^{I} o_i
-  ```
+```
 - **Helpfulness Rate:**
   - Share of answers that would enable a typical user to make progress on the task.
   - Connected label: `helpful`, $h_i \in \{0,1\}$
-  ```math
+```math
   \text{HelpfulnessRate}
   =
   \frac{1}{I}\sum_{i=1}^{I} h_i
-  ```
+```
 - **Incompleteness Rate:**
   - Share of answers that fail to cover one or more required parts of the query or task framing.
   - Connected label: `incomplete`, $n_i \in \{0,1\}$
-  ```math
+```math
   \text{IncompletenessRate}
   =
   \frac{1}{I}\sum_{i=1}^{I} n_i
-  ```
+```
 - **Unsafe Content Rate:**
   - Share of answers that contain content violating safety or policy constraints.
   - Connected label: `unsafe_content`, $r_i \in \{0,1\}$
-  ```math
+```math
   \text{UnsafeContentRate}
   =
   \frac{1}{I}\sum_{i=1}^{I} r_i
-  ```
+```
 
 
 ## Rationale
