@@ -8,40 +8,204 @@ Status: Draft
 We structure evaluation metrics into three families:
 
 1) **Retrieval metrics** — search quality
-2) **Grounding metrics** — evidence support / faithfulness
+2) **Grounding metrics** — evidence support
 3) **Generation metrics** — answer quality
 
 
 ## Taxonomy
 
-### 1) Retrieval metrics (depend on query, retrieved context)
+### 1) Retrieval metrics
 
-Goal: *Did we retrieve documents relevant to the query?*
+Goal: Did we retrieve documents relevant to the query?<br>
+Defined over: query $q_i$ and the top-$K$ retrieved chunks $c_{ik}$, $k = 1, ..., K$
 
-- **Context precision (Precision@k):** of the top-k retrieved chunks, how many are relevant?
-- **MRR:** how high up in the results was the first relevant chunk?
-- **NDCG:** how well does the ranking prioritize highly relevant chunks?
-- **Weighted relevance mass:** what proportion of total relevance is captured within top-k?
+- **Topical Precision@K:** 
+  - Of the top-$K$ retrieved chunks, what fraction are topically relevant?
+  - Connected label: `topically_relevant`, $t_{ik} \in \{0,1\}$
+  ```math
+  \text{TopicalPrecision@K}
+  \,=\,
+  \frac{1}{I}\sum_{i=1}^{I}\left(\frac{1}{K}\sum_{k=1}^{K} t_{ik}\right)
+  ```
+- **Sufficiency Hit@K:**
+  - For what share of queries is there at least one sufficient-evidence chunk in the top-$K$?
+  - Connected label: `evidence_sufficient`, $s_{ik} \in \{0,1\}$
+  ```math
+  \text{SufficiencyHit@K}
+  =
+  \frac{1}{I}\sum_{i=1}^{I}\mathbb{I}\!\left(\sum_{k=1}^{K} s_{ik} \ge 1\right)
+  ```
+- **Sufficiency Rate@K:** 
+  - Of the top-$K$ retrieved chunks, what fraction are individually sufficient evidence?
+  - Connected label: `evidence_sufficient`, $s_{ik} \in \{0,1\}$
+  ```math
+  \text{SufficiencyRate@K}
+  =
+  \frac{1}{I}\sum_{i=1}^{I}\left(\frac{1}{K}\sum_{k=1}^{K} s_{ik}\right)
+  ```
+- **Harmful Context Rate@K:** 
+  - Of the top-$K$ retrieved chunks, what fraction are misleading (risk-inducing) context?
+  - Connected label: `misleading`, $m_{ik} \in \{0,1\}$
+  ```math
+  \text{HarmfulContextRate@K}
+  =
+  \frac{1}{I}\sum_{i=1}^{I}\left(\frac{1}{K}\sum_{k=1}^{K} m_{ik}\right)
+  ```
+- **Mean Reciprocal Rank@K:**
+  - How high in the ranking is the first topically relevant chunk?
+  - Connected label: `topically_relevant`, $t_{ik} \in \{0,1\}$
+  ```math
+  RR@K(i)
+  =
+  \begin{cases}
+  \dfrac{1}{\min\{\, k \in \{1,\dots,K\} : t_{ik}=1 \,\}} 
+  & \text{if at least one } t_{ik}=1 \text{ for } k \in \{1,\dots,K\} \\
+  0 
+  & \text{otherwise}
+  \end{cases}
+  ```
+  ```math
+  \text{MRR@K}
+  =
+  \frac{1}{I}\sum_{i=1}^{I} RR@K(i)
+  ```
+- **Normalized Discounted Cumulative Gain@K:** 
+  - How well does the ranking prioritize highly relevant chunks?
+  - Connected labels: grades derived from `topically_relevant` and `evidence_sufficient`
+  ```math
+  w_{ik}
+  =
+  \begin{cases}
+  2 & \text{if } s_{ik}=1\\
+  1 & \text{if } t_{ik}=1 \text{ and } s_{ik}=0\\
+  0 & \text{otherwise}
+  \end{cases}
+  ```
+  ```math
+  DCG@K(i)
+  =
+  \sum_{k=1}^{K}
+  \frac{2^{w_{ik}}-1}{\log_2(k+1)}
+  ```
+  ```math
+  NDCG@K
+  =
+  \frac{1}{I}
+  \sum_{i=1}^{I}
+  \frac{DCG@K(i)}{IDCG@K(i)}
+  ```
 
-### 2) Grounding metrics (depend on answer, retrieved context)
+### 2) Grounding metrics
 
-Goal: *Does the answer use the retrieved evidence?*
+Goal: Does the answer use the retrieved evidence?<br>
+Defined over: answer $a_i$ and retrieved context set $C_i$
 
-- **Faithfulness / groundedness:** are claims in the answer backed by the retrieved context?
-- **Contradiction rate:** are any claims contradicted by the retrieved context?
-- **Citation coverage:** does the answer correctly attribute claims to specific chunks/pages (where citations exist)?
+- **Grounding Presence Rate:**
+  - Share of answers for which at least one substantive claim is supported by the provided context.
+  - Connected label: `support_present`, $g_i \in \{0,1\}$
+  ```math
+  \text{GroundingPresenceRate}
+  =
+  \frac{1}{I}\sum_{i=1}^{I} g_i
+  ```
+- **Unsupported Claim Rate:**
+  - Share of answers containing at least one unsupported (hallucinated) substantive claim.
+  - Connected label: `unsupported_claim_present`, $v_i \in \{0,1\}$
+  ```math
+  \text{UnsupportedClaimRate}
+  =
+  \frac{1}{I}\sum_{i=1}^{I} v_i
+  ```
+- **Contradiction Rate:**
+  - Share of answers containing at least one claim contradicted by the provided context.
+  - Connected label: `contradicted_claim_present`, $x_i \in \{0,1\}$
+  ```math
+  \text{ContradictionRate}
+  =
+  \frac{1}{I}\sum_{i=1}^{I} x_i
+  ```
+- **Grounding Error Rate:**
+  - Share of answers with any grounding failure, i.e., at least one unsupported or contradicted claim.
+  - Connected labels: `unsupported_claim_present`, $v_i \in \{0,1\}$; `contradicted_claim_present`, $x_i \in \{0,1\}$
+  ```math
+  \text{GroundingErrorRate}
+  =
+  \frac{1}{I}\sum_{i=1}^{I} \mathbb{I}\!\left(v_i + x_i \ge 1\right)
+  ```
+- **Citation Presence Rate:**
+  - Share of answers that contain any citation marker.
+  - Connected label: `source_cited`, $z_i \in \{0,1\}$
+  ```math
+  \text{CitationPresenceRate}
+  =
+  \frac{1}{I}\sum_{i=1}^{I} z_i
+  ```
+- **Conditional Fabrication Rate:**
+  - Among answers that cite something, how often is at least one citation fabricated?
+  - Connected labels: `source_cited`, $z_i \in \{0,1\}$; `fabricated_source`, $f_i \in \{0,1\}$
+  ```math
+  \text{ConditionalFabricationRate}
+  =
+  \frac{\sum_{i=1}^{I} z_i f_i}{\sum_{i=1}^{I} z_i}
+  ```
 
-### 3) Generation metrics (depend on query, answer)
+### 3) Generation metrics
 
-Goal: *Is the answer good / correct / complete?*
+Goal: Is the response appropriate and useful for the user?<br>
+Defined over: query $q_i$ and answer $a_i$
 
-- **Answer relevance:** does the response address the user's prompt?
-- **Correctness:** are factual statements and conclusions accurate given the query/task framing?
-- **Comprehensiveness:** does the answer cover all required parts of a multi-part query?
+- **Proper Action Rate:**
+  - Share of answers where the model chose the appropriate action (e.g., answer / clarify / refuse) given the query and system constraints.
+  - Connected label: `proper_action`, $d_i \in \{0,1\}$
+  ```math
+  \text{ProperActionRate}
+  =
+  \frac{1}{I}\sum_{i=1}^{I} d_i
+  ```
+- **On-Topic Rate:**
+  - Share of answers that substantively address the user’s request.
+  - Connected label: `response_on_topic`, $o_i \in \{0,1\}$
+  ```math
+  \text{OnTopicRate}
+  =
+  \frac{1}{I}\sum_{i=1}^{I} o_i
+  ```
+- **Helpfulness Rate:**
+  - Share of answers that would enable a typical user to make progress on the task.
+  - Connected label: `helpful`, $h_i \in \{0,1\}$
+  ```math
+  \text{HelpfulnessRate}
+  =
+  \frac{1}{I}\sum_{i=1}^{I} h_i
+  ```
+- **Incompleteness Rate:**
+  - Share of answers that fail to cover one or more required parts of the query or task framing.
+  - Connected label: `incomplete`, $n_i \in \{0,1\}$
+  ```math
+  \text{IncompletenessRate}
+  =
+  \frac{1}{I}\sum_{i=1}^{I} n_i
+  ```
+- **Unsafe Content Rate:**
+  - Share of answers that contain content violating safety or policy constraints.
+  - Connected label: `unsafe_content`, $r_i \in \{0,1\}$
+  ```math
+  \text{UnsafeContentRate}
+  =
+  \frac{1}{I}\sum_{i=1}^{I} r_i
+  ```
+
+
+## Rationale
+
+- **Three-family decomposition**: Separates failure modes, keeps metrics interpretable and matches common RAG evaluation decompositions. 
+- **Label-first metric design**: Metrics are defined as simple aggregations of explicitly annotated binary labels. This keeps estimands transparent and makes metric values auditable.
+- **No recall-style retrieval metrics**: Typically, we do not have an enumerated set of all relevant chunks in the corpus, so recall@k is not estimable without unrealistic annotation assumptions.
+- **No explicit correctness metric**: For many chatbot queries there is no single unambiguous “correct” response, and correctness often requires deep domain expertise.
 
 
 ## Consequences
 
-- We separate failure modes: retrieval vs grounding vs generation.
-- Annotation rubrics should map cleanly onto these three families.
-- Reporting should summarize results by family first, then by metric.
+- Reporting should summarize results by family first, then drill down by metric.
+- Each metric is computable as a deterministic aggregation of one or more labels.
+- Metric computation is pure post-processing: Once labels are produced, metrics are computed without additional model calls or heuristic scoring.
