@@ -22,7 +22,7 @@ Each task:
 ### Unit of annotation
 
 - For each query $𝑞_i$, we consider a ranked list of retrieved chunks: ($𝑞_i$, $c_{i1}$), ($𝑞_i$, $c_{i2}$), $...$, ($𝑞_i$, $c_{ik}$)
-- Annotation is performed per query-chunk pair ($𝑞_i$, $c_{ik}$)
+- Retrieval annotation is performed per query-chunk pair ($𝑞_i$, $c_{ik}$)
 
 ### Labels
 
@@ -34,7 +34,7 @@ For each pair ($𝑞_i$, $c_{ik}$), annotators must assign:
 ### Label semantics
 
 - `topically_relevant`: The retrieved chunk contains information that is substantively related to the query.
-- `evidence_sufficient`: The retrieved chunk alone contains sufficient information to answer the query.
+- `evidence_sufficient`: The chunk provides sufficient evidence to support answering the query, even if additional chunks could also be relevant.
 - `misleading`: The retrieved chunk contains information that could plausibly lead to an incorrect or distorted answer if used.
 
 ### Logical constraints
@@ -49,7 +49,7 @@ The following consistency constraints apply:
 ### Unit of annotation
 
 - For each answer $a_i$, we consider the full retrieved context set $C_i$ shown to the model
-- Annotation is performed per answer-context pair ($a_i$, $C_i$)
+- Grounding annotation is performed per answer-context pair ($a_i$, $C_i$)
 
 ### Labels
 
@@ -80,7 +80,7 @@ The following consistency constraints apply:
 ### Unit of annotation
 
 - For each query $𝑞_i$, we consider the model’s generated answer $a_i$
-- Annotation is performed per query–answer pair ($q_i$, $a_i$)
+- Generation annotation is performed per query–answer pair ($q_i$, $a_i$)
 
 ### Labels
 
@@ -93,7 +93,7 @@ For each pair ($q_i$, $a_i$), annotators must assign:
 
 ### Label semantics
 
-- `proper_action`: The response chooses the appropriate action given the query and system constraints.
+- `proper_action`: The response selects the appropriate response type (e.g., answer, refusal, clarification request) given the query and system constraints.
 - `response_on_topic`: The response substantively addresses the user’s request.
 - `helpful`: The response would enable a typical user to make progress on the task.
 - `incomplete`: The response fails to cover one or more required parts of the query or task framing.

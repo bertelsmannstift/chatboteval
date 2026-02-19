@@ -17,7 +17,7 @@ We structure evaluation metrics into three families:
 ### 1) Retrieval metrics
 
 Goal: Did we retrieve documents relevant to the query?<br>
-Defined over: query $q_i$ and the top-_K_ retrieved chunks $c_{ik}$, $k = 1, ..., K$
+Defined over: queries $q_i$, $i = 1, ..., I$ (where $I$ is the total number of queries), and the top-_K_ retrieved chunks $c_{ik}$, $k = 1, ..., K$
 
 - **Topical Precision@K:** 
   - Of the top-_K_ retrieved chunks, what fraction are topically relevant?
@@ -43,11 +43,11 @@ Defined over: query $q_i$ and the top-_K_ retrieved chunks $c_{ik}$, $k = 1, ...
   =
   \frac{1}{I}\sum_{i=1}^{I}\left(\frac{1}{K}\sum_{k=1}^{K} s_{ik}\right)
 ```
-- **Harmful Context Rate@K:** 
-  - Of the top-_K_ retrieved chunks, what fraction are misleading (risk-inducing) context?
+- **Misleading Context Rate@K:** 
+  - Of the top-_K_ retrieved chunks, what fraction are misleading with respect to answering the query (risk-inducing if used as evidence)?
   - Connected label: `misleading`, $m_{ik} \in \{0,1\}$
 ```math
-  \text{HarmfulContextRate@K}
+  \text{MisleadingContextRate@K}
   =
   \frac{1}{I}\sum_{i=1}^{I}\left(\frac{1}{K}\sum_{k=1}^{K} m_{ik}\right)
  ```
@@ -55,12 +55,15 @@ Defined over: query $q_i$ and the top-_K_ retrieved chunks $c_{ik}$, $k = 1, ...
   - How high in the ranking is the first topically relevant chunk?
   - Connected label: `topically_relevant`, $t_{ik} \in \{0,1\}$
 ```math
+  k_i^* = \min \{ k \in \{1,\dots,K\} : t_{ik} = 1 \}
+```
+```math
   RR@K(i)
   =
   \begin{cases}
-  \dfrac{1}{\min\{\, k \in \{1,\dots,K\} : t_{ik}=1 \,\}} 
-  & \text{if at least one } t_{ik}=1 \text{ for } k \in \{1,\dots,K\} \\
-  0 
+  \dfrac{1}{k_i^*}
+  & \text{if } k_i^* \text{ exists} \\
+  0
   & \text{otherwise}
   \end{cases}
 ```
@@ -123,14 +126,6 @@ Defined over: answer $a_i$ and retrieved context set $C_i$
   \text{ContradictionRate}
   =
   \frac{1}{I}\sum_{i=1}^{I} x_i
-```
-- **Grounding Error Rate:**
-  - Share of answers with any grounding failure, i.e., at least one unsupported or contradicted claim.
-  - Connected labels: `unsupported_claim_present`, $v_i \in \{0,1\}$; `contradicted_claim_present`, $x_i \in \{0,1\}$
-```math
-  \text{GroundingErrorRate}
-  =
-  \frac{1}{I}\sum_{i=1}^{I}\left[v_i + x_i \ge 1\right]
 ```
 - **Citation Presence Rate:**
   - Share of answers that contain any citation marker.
@@ -202,7 +197,7 @@ Defined over: query $q_i$ and answer $a_i$
 - **Label-first metric design**: Metrics are defined as simple aggregations of explicitly annotated binary labels. This keeps estimands transparent and makes metric values auditable.
 - **No recall-style retrieval metrics**: Typically, we do not have an enumerated set of all relevant chunks in the corpus, so recall@k is not estimable without unrealistic annotation assumptions.
 - **No explicit correctness metric**: For many chatbot queries there is no single unambiguous “correct” response, and correctness often requires deep domain expertise.
-
+- **Ordinal graded relevance for NDCG**: Evidence-sufficient chunks are treated as strictly more relevant than merely topically relevant chunks. The gain levels (2,1,0) encode this ordering without implying cardinal utility differences.
 
 ## Consequences
 
