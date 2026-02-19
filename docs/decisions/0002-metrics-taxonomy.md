@@ -17,10 +17,10 @@ We structure evaluation metrics into three families:
 ### 1) Retrieval metrics
 
 Goal: Did we retrieve documents relevant to the query?<br>
-Defined over: query $q_i$ and the top-$K$ retrieved chunks $c_{ik}$, $k = 1, ..., K$
+Defined over: query $q_i$ and the top-_K_ retrieved chunks $c_{ik}$, $k = 1, ..., K$
 
 - **Topical Precision@K:** 
-  - Of the top-$K$ retrieved chunks, what fraction are topically relevant?
+  - Of the top-_K_ retrieved chunks, what fraction are topically relevant?
   - Connected label: `topically_relevant`, $t_{ik} \in \{0,1\}$
 ```math
   \text{TopicalPrecision@K}
@@ -28,7 +28,7 @@ Defined over: query $q_i$ and the top-$K$ retrieved chunks $c_{ik}$, $k = 1, ...
   \frac{1}{I}\sum_{i=1}^{I}\left(\frac{1}{K}\sum_{k=1}^{K} t_{ik}\right)
 ```
 - **Sufficiency Hit@K:**
-  - For what share of queries is there at least one sufficient-evidence chunk in the top-$K$?
+  - For what share of queries is there at least one sufficient-evidence chunk in the top-_K_?
   - Connected label: `evidence_sufficient`, $s_{ik} \in \{0,1\}$
 ```math
   \text{SufficiencyHit@K}
@@ -36,7 +36,7 @@ Defined over: query $q_i$ and the top-$K$ retrieved chunks $c_{ik}$, $k = 1, ...
   \frac{1}{I}\sum_{i=1}^{I}\mathbb{I}\!\left(\sum_{k=1}^{K} s_{ik} \ge 1\right)
 ```
 - **Sufficiency Rate@K:** 
-  - Of the top-$K$ retrieved chunks, what fraction are individually sufficient evidence?
+  - Of the top-_K_ retrieved chunks, what fraction are individually sufficient evidence?
   - Connected label: `evidence_sufficient`, $s_{ik} \in \{0,1\}$
 ```math
   \text{SufficiencyRate@K}
@@ -44,7 +44,7 @@ Defined over: query $q_i$ and the top-$K$ retrieved chunks $c_{ik}$, $k = 1, ...
   \frac{1}{I}\sum_{i=1}^{I}\left(\frac{1}{K}\sum_{k=1}^{K} s_{ik}\right)
 ```
 - **Harmful Context Rate@K:** 
-  - Of the top-$K$ retrieved chunks, what fraction are misleading (risk-inducing) context?
+  - Of the top-_K_ retrieved chunks, what fraction are misleading (risk-inducing) context?
   - Connected label: `misleading`, $m_{ik} \in \{0,1\}$
 ```math
   \text{HarmfulContextRate@K}
