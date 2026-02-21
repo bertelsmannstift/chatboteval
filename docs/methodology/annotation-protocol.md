@@ -1,7 +1,7 @@
 # Annotation Protocol
 
 This document defines the three annotation tasks, units, labels, and logical constraints required to compute metrics. It specifies:
-- the annotation tasks aligned to the metric families (retrieval / grounding / generation, [see Metrics Taxonomy](metrics-taxonomy.md)) 
+- the annotation tasks aligned to the metric families (retrieval / grounding / generation, [see Metrics Taxonomy](metrics-taxonomy.md))
 - the unit of annotation for each task
 - the binary label sets and their semantics
 - the logical consistency constraints that define valid multilabel vectors
@@ -32,6 +32,8 @@ Notation follows conventions set out in [Metrics Taxonomy](metrics-taxonomy.md).
 - For each query $q_i$, we consider a ranked list of retrieved chunks: ($q_i$, $c_{i1}$), ($q_i$, $c_{i2}$), $...$, ($q_i$, $c_{ik}$)
 - Retrieval annotation is performed per query-chunk pair ($q_i$, $c_{ik}$)
 
+> **Chunk definition:** A chunk $c_{ik}$ is the atomic unit returned by the retriever - the independently retrievable, rankable segment. In PublikationsBot, this corresponds to a `pub_chunks` entry (K ≤ 15 by default). Note that PB groups reranked chunks by publication before passing to the LLM (`retrieved_docs`); retrieval-level annotation operates on the pre-grouping chunk, not the grouped document.
+
 ### Labels
 
 For each pair ($q_i$, $c_{ik}$), annotators must assign:
@@ -58,6 +60,8 @@ The following consistency constraints apply:
 
 - For each answer $a_i$, we consider the full retrieved context set $C_i$ shown to the model
 - Grounding annotation is performed per answer-context-set pair ($a_i$, $C_i$)
+
+> **Context set definition:** $C_i$ is the prompt-inserted evidence — in PublikationsBot, the `retrieved_docs` entries (pub_chunks grouped by publication, exactly as the model saw them), concatenated as a single string with `[SEP]` separators between documents.
 
 ### Labels
 

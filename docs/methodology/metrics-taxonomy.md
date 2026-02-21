@@ -1,10 +1,14 @@
 # Metrics Taxonomy
 
+<<<<<<<< HEAD:docs/methodology/metrics-taxonomy.md
 This document defines the evaluation metric taxonomy used by this framework. It specifies:
 - the metric families used to decompose RAG chatbot performance
 - the evaluation unit and notation,
 - the required annotation labels each metric depends on
 - the deterministic aggregation rules used to compute metric values
+========
+Status: Accepted
+>>>>>>>> bf3cb6f (docs: annotation decisions 0005-0009, rename 0001-0004 to module-prefix scheme, accept 0002):docs/decisions/0002-eval-metrics-taxonomy.md
 
 
 ## Metric families
