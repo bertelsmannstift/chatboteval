@@ -34,7 +34,7 @@ Status: Accepted
 
 > **Admin role (unused in v1.0):** Argilla also provides an Admin role - can manage datasets within assigned workspaces, but cannot create users or assign workspace membership. Useful at scale when a dedicated dataset manager layer is needed between the system owner and annotators. For v1.0 (<10 users, one tech lead), this is over-engineering — all dataset setup is done once at deployment via SDK scripts. Admin role support is deferred; it may be exposed in a later release alongside OAuth2 to reduce credential management overhead.
 
-See [User Management design doc](../design/user-management.md) for account creation, API key handling, and password reset workflow.
+See [User Management design doc](../design/annotation-user-management.md) for account creation, API key handling, and password reset workflow.
 
 
 ## Consequences

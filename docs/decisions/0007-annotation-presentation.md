@@ -5,7 +5,7 @@ Status: Accepted
 
 ## Decision
 
-Task isolation across annotator groups is achieved via Argilla workspace assignment: each workspace exposes only its assigned datasets, so different groups can be given different subsets of the three tasks. See [Workspace & Task Distribution](../design/workspace-task-distribution.md).
+Task isolation across annotator groups is achieved via Argilla workspace assignment: each workspace exposes only its assigned datasets, so different groups can be given different subsets of the three tasks. See [Workspace & Task Distribution](../design/annotation-workspace-task-distribution.md).
 
 All labels for a task are presented simultaneously (joint labelling). For each task, the annotator UI provides:
 
@@ -85,7 +85,7 @@ Each task dataset includes one optional free-text field per annotated unit:
 ## Consequences
 
 - Supporting context fields (`answer` for Task 1; `query` for Task 2; `retrieved_passages` for Task 3) must be included in the Argilla field configuration, positioned after primary content fields
-- Workspace and annotator group assignment (who sees which dataset) is an operational decision — see [Workspace & Task Distribution](../design/workspace-task-distribution.md)
-- Three Argilla datasets required: `task1_retrieval`, `task2_grounding`, `task3_generation` — incompatible field structures prevent a unified schema (see [ADR-0013](0013-multi-dataset-architecture.md))
+- Workspace and annotator group assignment (who sees which dataset) is an operational decision — see [Workspace & Task Distribution](../design/annotation-workspace-task-distribution.md)
+- Three Argilla datasets required: `task1_retrieval`, `task2_grounding`, `task3_generation` — incompatible field structures prevent a unified schema (see [ADR-0013](0013-annotation-multi-dataset-architecture.md))
 - Export schema ([ADR-0005](0005-annotation-export-schema.md)) must include one binary field per label and the optional notes field
 - Schema can be revised after the first annotation iteration based on IAA results and annotator feedback
