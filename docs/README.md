@@ -24,7 +24,7 @@ Key architectural and tooling decisions with rationale:
 
 ### Design
 
-Component design documents covering responsibilities, interfaces, and failure modes:
+Decision-aligned engineering blueprints explaining how components are structured, connected, and operationalized in code:
 
 - [Design Documents Index](design/README.md)
 

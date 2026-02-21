@@ -1,12 +1,17 @@
 # Design Documents
 
-This directory contains living component design documents covering responsibilities, interfaces, and failure modes.
+This directory contains living, decision-aligned engineering blueprints that explain how components are structured, connected, and operationalized in code.
 
-Each design document focuses on:
-- **Responsibilities and boundaries** — What this component does and doesn't do
-- **Inputs/outputs (contracts)** — Data interfaces and APIs
-- **Failure modes / edge cases** — How things can/might break and how we handle it
-- **Links to relevant issues** — Active work and tracking
+Design document focus on (this is guidance, not a required section template):
+
+- **Responsibilities and boundaries** — What the component owns, and what it explicitly does not
+- **Placement in the overall architecture** — How it connects to adjacent components
+- **Module / package structure** — The concrete layout and internal seams
+- **Public interfaces / contracts** — User-facing APIs and boundaries: inputs/outputs, invariants, and semantics
+- **Key flows / control flow** — The main execution paths and state transitions
+- **Extension points** — Expected customization hooks and how to add functionality safely
+- **Failure modes & operational constraints** — Edge cases, degradation behavior, and operational considerations
+- **Links to relevant work** — Issues/PRs for active tracking and implementation context
 
 ## Index
 
