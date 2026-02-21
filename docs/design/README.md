@@ -2,7 +2,7 @@
 
 This directory contains living, decision-aligned engineering blueprints that explain how components are structured, connected, and operationalized in code.
 
-Design document focus on (this is guidance, not a required section template):
+Design documents focus on (this is guidance, not a required section template):
 
 - **Responsibilities and boundaries** — What the component owns, and what it explicitly does not
 - **Placement in the overall architecture** — How it connects to adjacent components
