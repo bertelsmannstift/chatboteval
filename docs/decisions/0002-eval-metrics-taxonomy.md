@@ -1,6 +1,6 @@
 # 0002: Metrics Taxonomy
 
-Status: Draft
+Status: Accepted
 
 
 ## Decision
