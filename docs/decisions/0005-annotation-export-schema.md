@@ -19,7 +19,7 @@ Each task produces a separate CSV. Columns are task-specific; shared metadata co
 
 | Column | Type | Description |
 |--------|------|-------------|
-| `record_uuid` | string | Cross-dataset record identifier (see [Import Pipeline](../design/import-pipeline.md)) |
+| `record_uuid` | string | Cross-dataset record identifier (see [Import Pipeline](../design/annotation-import-pipeline.md)) |
 | `annotator_id` | string | Annotator username |
 | `task` | string | Task identifier: `retrieval`, `grounding`, or `generation` |
 | `language` | string | Detected language code (`de` / `en`). Optional, provided by `Publikationsbot` |
@@ -101,7 +101,7 @@ Unit: one row per `(query, answer, annotator)` triple.
     - grounding: `text=answer`, `text_pair=context_set`
     -  generation: `text=query`, `text_pair=answer`
 - Task 1 (Retrieval) requires an aggregation step before metric computation: multiple rows per query (one per chunk) must be grouped before computing per-query retrieval metrics.
-- Cross-dataset linking uses `record_uuid`; see [Import Pipeline](../design/import-pipeline.md).
+- Cross-dataset linking uses `record_uuid`; see [Import Pipeline](../design/annotation-import-pipeline.md).
 - IAA calculation reads flat export directly, filtering by label column within each task CSV.
 - HuggingFace Datasets extension (v1.x+): Argilla SDK supports `dataset.records.to_datasets()`.
 - See [ADR-0006: Annotation Tasks](0006-annotation-tasks.md) and [ADR-0007: Annotation UI Presentation](0007-annotation-presentation.md) for label definitions.
