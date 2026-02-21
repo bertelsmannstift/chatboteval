@@ -1,6 +1,6 @@
 # 0006: Annotation tasks
 
-Status: Draft
+Status: Accepted
 
 
 ## Decision
@@ -23,6 +23,8 @@ Each task:
 
 - For each query $𝑞_i$, we consider a ranked list of retrieved chunks: ($𝑞_i$, $c_{i1}$), ($𝑞_i$, $c_{i2}$), $...$, ($𝑞_i$, $c_{ik}$)
 - Retrieval annotation is performed per query-chunk pair ($𝑞_i$, $c_{ik}$)
+
+> **Chunk definition:** A chunk $c_{ik}$ is the atomic unit returned by the retriever - the independently retrievable, rankable segment. In PublikationsBot, this corresponds to a `pub_chunks` entry (K ≤ 15 by default). Note that PB groups reranked chunks by publication before passing to the LLM (`retrieved_docs`); retrieval-level annotation operates on the pre-grouping chunk, not the grouped document.
 
 ### Labels
 
@@ -50,6 +52,8 @@ The following consistency constraints apply:
 
 - For each answer $a_i$, we consider the full retrieved context set $C_i$ shown to the model
 - Grounding annotation is performed per answer-context pair ($a_i$, $C_i$)
+
+> **Context set definition:** $C_i$ is the prompt-inserted evidence — in PublikationsBot, the `retrieved_docs` entries (pub_chunks grouped by publication, exactly as the model saw them), concatenated as a single string with `[SEP]` separators between documents.
 
 ### Labels
 
