@@ -11,20 +11,18 @@ Any future schema change is a breaking design decision requiring a new ADR and n
 
 ## Rationale
 
-**Argilla is code-first by design:** `Settings` objects are Python — that is the intended SDK interface. There is no built-in schema editor. Building abstraction on top of this means re-implementing what the SDK exposes cleanly, in a different format. Configurability adds complexity with no benefit.
+**Argilla is code-first by design:** `Settings` objects are Python — adding a config layer re-implements the SDK in a different format with no benefit.
 
-**Schemas implement the label set assumed by the metrics taxonomy and annotation-task decisions:** making schemas user-configurable would undermine the interpretability and comparability of results across annotators and datasets (see [ADR-0002: Metrics Taxonomy](0002-eval-metrics-taxonomy.md), [ADR-0006: Annotation Tasks](0006-annotation-tasks.md)).
+**Schemas encode the label set from [ADR-0002](0002-eval-metrics-taxonomy.md) and [ADR-0006](0006-annotation-tasks.md):** user-configurability would undermine result comparability across annotators and datasets.
 
 
 >## Alternatives considered
 >
->**YAML/TOML config layer:** Define schemas in config files, parsed into `Settings` objects at setup time. Rejected because:
->- Requires building a config schema (schema for the schema), parser, validator, and error handling
->- Re-implements Argilla's Python SDK in a different format; leaky abstraction adds maintenance burden as Argilla's API evolves
+>**YAML/TOML config layer:** Rejected — re-implements the Argilla SDK in a different format; requires a config schema, parser, and validator with ongoing maintenance burden.
 >
->**Argilla admin UI schema editor:** Does not exist in Argilla v2. Schemas must be defined via SDK. Not a viable path without building a custom frontend (out of scope — see [ADR-0001](0001-annotation-argilla-platform.md)).
+>**Argilla admin UI schema editor:** Does not exist in Argilla v2; would require a custom frontend (out of scope — see [ADR-0001](0001-annotation-argilla-platform.md)).
 >
->**Dedicated schema module (fork-and-modify path):** Schema definitions live in a dedicated Python module (e.g. `schemas.py`), clearly separated from setup orchestration. Downstream users fork and edit the Python directly. Zero overhead, fully Pythonic, aligns with how Argilla is designed to be used. This remains the recommended extension path if schema changes are ever warranted.
+>**Dedicated schema module (fork-and-modify path):** Schema definitions in a dedicated Python module (e.g. `schemas.py`), separated from setup orchestration — the recommended extension path if schema changes are warranted.
 
 
 ## Consequences

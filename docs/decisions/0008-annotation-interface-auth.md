@@ -6,7 +6,7 @@ Status: Accepted
 ## Decision
 
 - Use Argilla's built-in username/password authentication for v1.0. 
-- OAuth2 and LDAP deferred to v1.x+.
+- OAuth2 and LDAP deferred.
 - Account creation and workspace membership is Owner-role managed. 
 
 ## Rationale
@@ -19,11 +19,11 @@ Status: Accepted
 
 >## Alternatives considered
 >
->**OAuth2** (HuggingFace, Google, GitHub): Argilla v2 supports OAuth2 natively via `oauth.yaml` config and `ARGILLA_AUTH_OAUTH_CFG` environment variable. Viable for v1.x+ if annotators have Google (or less likely HF) accounts — no separate IdP setup required. Deferred as adds config overhead unjustified at fewer than 10 users, and workspace assignment still requires owner action regardless.
+>**OAuth2** (HuggingFace, Google, GitHub): Argilla v2 supports OAuth2 natively via `oauth.yaml` config and `ARGILLA_AUTH_OAUTH_CFG` environment variable. Viable if annotators have Google (or less likely HF) accounts — no separate IdP setup required. Deferred as adds config overhead unjustified at fewer than 10 users, and workspace assignment still requires owner action regardless.
 >
->**LDAP / enterprise SSO**: adds infrastructure dependency (external IdP or directory server); unjustified at pilot scale. Inferior to OAuth2.
+>**LDAP / enterprise SSO**: adds infrastructure dependency (external IdP or directory server). Inferior to OAuth2.
 >
->**Self-managed identity layer**: signif implementation overhead with no benefit over Argilla's built-in RBAC at pilot scale.
+>**Self-managed identity layer**: significant implementation overhead with no benefit over Argilla's built-in RBAC.
 
 ## Role Mapping
 

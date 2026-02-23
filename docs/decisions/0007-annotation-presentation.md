@@ -2,6 +2,8 @@
 
 Status: Accepted
 
+> **Depends on:** [ADR-0006](0006-annotation-tasks.md) for label semantics and question wording alignment
+
 
 ## Decision
 
@@ -18,32 +20,28 @@ All labels for a task are presented simultaneously (joint labelling). For each t
 
 ### Visibility contract per task
 
-| Task | Primary content (always visible) | Supporting context |
+| Task | Primary content | Supporting context |
 |---|---|---|
-| Task 1: Retrieval | Query + passage | Generated answer |
+| Task 1: Retrieval | Query + chunk | Generated answer |
 | Task 2: Grounding | Answer + retrieved context set | Query |
 | Task 3: Generation | Query + answer | Retrieved passages |
 
->NB: Argilla v2 does not support collapsible field panels — field ordering is the only mechanism available. Supporting context fields must be positioned after primary content fields in the `rg.Settings` field list.
+>NB: Argilla v2 does not support collapsible field panels natively, instead we will use an `rg.CustomField` with `advanced_mode=True` to render supporting context as a collapsible HTML element.
 
 
 ## Annotator-facing questions
 
-Question wording is locked here and reflects label semantics from [ADR-0006](0006-annotation-tasks.md). English is the primary wording for design and cross-team reference; German is the annotator-facing display language. Wording may evolve as label semantics stabilise in ADR-0006; this ADR should be updated in sync.
+Question wording is locked here and reflects label semantics from [ADR-0006](0006-annotation-tasks.md). English is the default display language for annotators; German translations are available as an optional display language. Wording may evolve as label semantics stabilise in ADR-0006; this ADR should be updated in sync.
 
 ### Task 1: Retrieval
-
-Unit of annotation: query–chunk pair $(q_i, c_{ik})$ — see [ADR-0006 §Task 1](0006-annotation-tasks.md)
 
 | Label | Question (EN) | Question (DE) |
 |---|---|---|
 | `topically_relevant` | Does this passage contain information that is substantively relevant to the query? | Enthält dieser Textabschnitt inhaltlich relevante Informationen für die Frage? |
-| `evidence_sufficient` | Does this passage alone contain sufficient information to answer the query? | Reicht dieser Textabschnitt allein aus, um die Frage zu beantworten? |
+| `evidence_sufficient` | Does this passage contain sufficient evidence to support answering the query? | Enthält dieser Textabschnitt ausreichend Belege, um die Frage zu beantworten? |
 | `misleading` | Could this passage plausibly lead to an incorrect or distorted answer? | Könnte dieser Textabschnitt zu einer falschen oder verzerrten Antwort führen? |
 
 ### Task 2: Grounding
-
-Unit of annotation: answer–context pair $(a_i, C_i)$ — see [ADR-0006 §Task 2](0006-annotation-tasks.md)
 
 | Label | Question (EN) | Question (DE) |
 |---|---|---|
@@ -54,8 +52,6 @@ Unit of annotation: answer–context pair $(a_i, C_i)$ — see [ADR-0006 §Task 
 | `fabricated_source` | Does the answer cite a source not present in the retrieved context? | Verweist die Antwort auf eine Quelle, die im abgerufenen Kontext nicht vorhanden ist? |
 
 ### Task 3: Generation
-
-Unit of annotation: query–answer pair $(q_i, a_i)$ — see [ADR-0006 §Task 3](0006-annotation-tasks.md)
 
 | Label | Question (EN) | Question (DE) |
 |---|---|---|
@@ -79,7 +75,7 @@ Each task dataset includes one optional free-text field per annotated unit:
 
 **Visibility contract**: Primary content is the minimal unit needed for the labelling task. Supporting context is included to aid consistency but kept secondary to reduce anchoring bias on the primary judgement.
 
-**English as primary wording**: English is the design-time source of truth for question wording (design review, cross-team reference, code configuration). German translations are the annotator-facing display strings.
+**English as default display language**: English is both the design-time source of truth and the default annotator-facing display language. German translations are available as an optional display language.
 
 
 ## Consequences
