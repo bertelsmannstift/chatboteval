@@ -28,6 +28,12 @@ Decision-aligned engineering blueprints explaining how components are structured
 
 - [Design Documents Index](design/README.md)
 
+### Methodology
+
+Scientific and evaluation methodology underlying the framework:
+
+- [Methodology Documents Index](methodology/README.md)
+
 ### Reference
 
 - [Glossary](glossary.md) — Key terms and concepts

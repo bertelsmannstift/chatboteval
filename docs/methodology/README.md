@@ -6,5 +6,5 @@ Methodology documents define the evaluation protocol and may include, for exampl
 
 ## Index
 
-- [](annotation-interface.md) — ...
-
+- [Metrics Taxonomy](metrics-taxonomy.md) — Defines the evaluation metric taxonomy used by this framework
+- [Annotation Protocol](annotation-protocol.md) — Specifies the annotation tasks, label definitions, decision rules, and task–metric alignment

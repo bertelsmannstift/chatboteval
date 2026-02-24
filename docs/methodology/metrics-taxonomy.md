@@ -1,23 +1,48 @@
-# 0002: Metrics Taxonomy
+# Metrics Taxonomy
 
-Status: Draft
+This document defines the evaluation metric taxonomy used by this framework. It specifies:
+- the metric families used to decompose RAG chatbot performance
+- the evaluation unit and notation,
+- the required annotation labels each metric depends on
+- the deterministic aggregation rules used to compute metric values
 
 
-## Decision
+## Metric families
 
-We structure evaluation metrics into three families:
+1) **Retrieval metrics** — search quality of the retrieved context
+2) **Grounding metrics** — whether the answer is supported by retrieved evidence
+3) **Generation metrics** — answer quality independent of retrieval mechanics
 
-1) **Retrieval metrics** — search quality
-2) **Grounding metrics** — evidence support
-3) **Generation metrics** — answer quality
+
+## Evaluation unit
+
+The primary evaluation unit is a **query example**, consisting of:
+- a query
+- its retrieved top-K context set
+- the generated answer.
+
+Individual metrics may use only a subset of these fields (e.g., chunk-level labels, context-set or answer-level labels). However, metric computation follows the same aggregation principle:
+
+1. Compute a score per query example.
+2. Report the dataset score as the average across query examples, unless explicitly stated otherwise.
+
+
+## Core notation
+
+- $i = 1, ..., I$ index queries/examples
+- $k = 1, ..., K$ index the rank position within the retrieved top-`K`
+- $q_i$ a single query
+- $a_i$ a generated answer
+- $c_{ik}$ a retrieved context chunk at rank $k$
+- $C_i$ the retrieved context set consisting of the top-`K` context chunks
 
 
 ## Taxonomy
 
 ### 1) Retrieval metrics
 
-Goal: Did we retrieve documents relevant to the query?<br>
-Defined over: queries $q_i$, $i = 1, ..., I$ (where $I$ is the total number of queries), and the top-_K_ retrieved chunks $c_{ik}$, $k = 1, ..., K$
+Definition: Evaluates the relevance and ranking quality of retrieved context with respect to the query.<br>
+Computed over: queries $q_i$, $i = 1, ..., I$ and the top-_K_ retrieved chunks $c_{ik}$, $k = 1, ..., K$
 
 - **Topical Precision@K:** 
   - Of the top-_K_ retrieved chunks, what fraction are topically relevant?
@@ -100,8 +125,8 @@ Defined over: queries $q_i$, $i = 1, ..., I$ (where $I$ is the total number of q
 
 ### 2) Grounding metrics
 
-Goal: Does the answer use the retrieved evidence?<br>
-Defined over: answer $a_i$ and retrieved context set $C_i$
+Definition: Evaluates whether the generated answer is supported, contradicted, or fabricated relative to the retrieved context set.<br>
+Computed over: answer $a_i$ and retrieved context set $C_i$
 
 - **Grounding Presence Rate:**
   - Share of answers for which at least one substantive claim is supported by the provided context.
@@ -138,6 +163,7 @@ Defined over: answer $a_i$ and retrieved context set $C_i$
 - **Conditional Fabrication Rate:**
   - Among answers that cite something, how often is at least one citation fabricated?
   - Connected labels: `source_cited`, $z_i \in \{0,1\}$; `fabricated_source`, $f_i \in \{0,1\}$
+  - This metric is computed conditionally over the subset of examples where $z_i=1$.
 ```math
   \text{ConditionalFabricationRate}
   =
@@ -146,8 +172,8 @@ Defined over: answer $a_i$ and retrieved context set $C_i$
 
 ### 3) Generation metrics
 
-Goal: Is the response appropriate and useful for the user?<br>
-Defined over: query $q_i$ and answer $a_i$
+Definition: Evaluates the appropriateness, usefulness, and safety of the generated answer with respect to the user’s request and system constraints.<br>
+Computed over: query $q_i$ and answer $a_i$
 
 - **Proper Action Rate:**
   - Share of answers where the model chose the appropriate action (e.g., answer / clarify / refuse) given the query and system constraints.
@@ -189,18 +215,3 @@ Defined over: query $q_i$ and answer $a_i$
   =
   \frac{1}{I}\sum_{i=1}^{I} r_i
 ```
-
-
-## Rationale
-
-- **Three-family decomposition**: Separates failure modes, keeps metrics interpretable and matches common RAG evaluation decompositions. 
-- **Label-first metric design**: Metrics are defined as simple aggregations of explicitly annotated binary labels. This keeps estimands transparent and makes metric values auditable.
-- **No recall-style retrieval metrics**: Typically, we do not have an enumerated set of all relevant chunks in the corpus, so recall@k is not estimable without unrealistic annotation assumptions.
-- **No explicit correctness metric**: For many chatbot queries there is no single unambiguous “correct” response, and correctness often requires deep domain expertise.
-- **Ordinal graded relevance for NDCG**: Evidence-sufficient chunks are treated as strictly more relevant than merely topically relevant chunks. The gain levels (2,1,0) encode this ordering without implying cardinal utility differences.
-
-## Consequences
-
-- Reporting should summarize results by family first, then drill down by metric.
-- Each metric is computable as a deterministic aggregation of one or more labels.
-- Metric computation is pure post-processing: Once labels are produced, metrics are computed without additional model calls or heuristic scoring.
