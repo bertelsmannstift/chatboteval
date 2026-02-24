@@ -5,7 +5,7 @@ Status: Accepted
 
 ## Decision
 
-This project evaluates RAG chatbots by scoring captured query–examples (primary evaluation unit, [see Metrics Taxonomy](docs/methodology/metrics-taxonomy.md)) using supervised evaluator models trained on human annotations.
+This project evaluates RAG chatbots by scoring captured query–examples (primary evaluation unit, [see Metrics Taxonomy](../methodology/metrics-taxonomy.md)) using supervised evaluator models trained on human annotations.
 
 The following architectural constraints apply:
 
