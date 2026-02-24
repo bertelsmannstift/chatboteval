@@ -1,6 +1,6 @@
 # Annotation UI Presentation
 
-> **Depends on:** [ADR-0006](../decisions/0006-annotation-tasks.md) for label semantics and question wording alignment
+> **Depends on:** [Annotation Tasks](../methodology/annotation-tasks.md) for label semantics and question wording alignment
 
 ## Presentation Model
 

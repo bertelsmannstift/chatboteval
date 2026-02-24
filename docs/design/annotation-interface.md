@@ -6,7 +6,7 @@ Web-based annotation interface for labelling RAG chatbot outputs across three an
 
 **In scope:**
 - Present query-response pairs with retrieved context to annotators
-- Collect binary labels per annotation task (see [ADR-0006](../decisions/0006-annotation-tasks.md) for label definitions)
+- Collect binary labels per annotation task (see [Annotation Tasks](../methodology/annotation-tasks.md) for label definitions)
 - Support concurrent multi-user annotation with task distribution
 - Export annotations to CSV/Parquet for evaluation framework
 
@@ -73,7 +73,7 @@ Three separate datasets are used (one per task), each task has distinct units of
 
 All labels binary, all required. Questions presented simultaneously within each task. Fields ordered per visibility contract below (primary content first, supporting context appended).
 
-See [ADR-0006](../decisions/0006-annotation-tasks.md) for label definitions and logical constraints.
+See [Annotation Tasks](../methodology/annotation-tasks.md) for label definitions and logical constraints.
 
 ### Visibility contract
 
@@ -110,7 +110,7 @@ Argilla v2 has no native collapsible field support. Approach: `rg.CustomField` w
 
 ### Annotator-facing questions
 
-Question wording reflects label semantics from [ADR-0006](../decisions/0006-annotation-tasks.md). English is the default display language; German is available as an optional display language.
+Question wording reflects label semantics from [Annotation Tasks](../methodology/annotation-tasks.md). English is the default display language; German is available as an optional display language.
 
 **Task 1: Retrieval**
 
@@ -170,7 +170,7 @@ Full column definitions and task-specific schemas: [Annotation Export Schema](an
 - [Decision 0001: Argilla Annotation Platform](../decisions/0001-annotation-argilla-platform.md)
 - [Annotation Export Schema](annotation-export-schema.md)
 - [Annotation UI Presentation](annotation-presentation.md) — rationale for joint labelling and visibility contract design
-- [Decision 0006: Annotation Tasks](../decisions/0006-annotation-tasks.md)
+- [Annotation Tasks](../methodology/annotation-tasks.md)
 - [Decision 0008: Authentication](../decisions/0008-annotation-interface-auth.md)
 - Deployment design doc (forthcoming PR) — Docker Compose stack and infrastructure setup
 - Argilla docs: https://docs.argilla.io/latest/

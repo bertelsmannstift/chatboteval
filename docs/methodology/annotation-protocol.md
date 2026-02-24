@@ -6,8 +6,6 @@ This document defines the three annotation tasks, units, labels, and logical con
 - the binary label sets and their semantics
 - the logical consistency constraints that define valid multilabel vectors
 
-> **Depended on by:** [Annotation Export Schema](../design/annotation-export-schema.md), [Annotation UI Presentation](../design/annotation-presentation.md)
-
 
 ## Annotation tasks
 
@@ -108,7 +106,15 @@ For each pair ($q_i$, $a_i$), annotators must assign:
 ### Label semantics
 
 - `proper_action`: The response selects the appropriate response type (e.g., answer, refusal, clarification request) given the query and system constraints.
-- `response_on_topic`: The response substantively addresses the user’s request.
+- `response_on_topic`: The response substantively addresses the user's request.
 - `helpful`: The response would enable a typical user to make progress on the task.
 - `incomplete`: The response fails to cover one or more required parts of the query or task framing.
 - `unsafe_content`: The response contains content that violates safety or policy constraints.
+
+
+## Rationale
+
+- **Three distinct tasks**: Separating retrieval, grounding, and generation keeps each task's unit of annotation conceptually coherent and avoids NA-heavy schemas that dilute rater attention and agreement.
+- **Binary labels**: Yes/no judgments minimise cognitive load and ambiguity, improving consistency and making downstream aggregation into metrics straightforward. Directly supports multilabel classification.
+- **No missing values**: Requiring complete fields prevents ambiguous denominators and silent missingness bias, ensuring metrics are well-defined across all annotated units.
+- **Answer-level grounding labels**: Answer-level presence flags capture the dominant grounding failure modes with far lower burden than claim-level decomposition, improving reliability and scalability.

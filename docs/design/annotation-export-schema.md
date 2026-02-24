@@ -1,6 +1,6 @@
 # Annotation Export Schema
 
-> **Depends on:** [ADR-0006](../decisions/0006-annotation-tasks.md) for label definitions
+> **Depends on:** [Annotation Tasks](../methodology/annotation-tasks.md) for label definitions
 
 ## Format
 
@@ -27,4 +27,4 @@
     - generation: `text=query`, `text_pair=answer`
 - Cross-dataset linking uses `record_uuid`; see Import Pipeline design doc (forthcoming PR).
 - IAA calculation reads flat export directly, filtering by label column within each task CSV.
-- See [ADR-0006: Annotation Tasks](../decisions/0006-annotation-tasks.md) for label definitions.
+- See [Annotation Tasks: Annotation Tasks](../methodology/annotation-tasks.md) for label definitions.
