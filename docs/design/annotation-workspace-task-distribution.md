@@ -100,5 +100,5 @@ Argilla's `TaskDistribution` controls how many annotators are assigned per recor
 - [Annotation UI Presentation](annotation-presentation.md) — Joint labelling and visibility contract rationale
 - [Decision 0008: Authentication](../decisions/0008-annotation-interface-auth.md) — Role-based access control
 - [Decision 0009: Schema Configurability](../decisions/0009-annotation-schema-configurability.md) — Hardcoded schema rationale
-- [Decision 0013: Multi-Dataset Architecture](../decisions/0013-annotation-multi-dataset-architecture.md) — rationale for three datasets vs. unified schema
+- [Decision 0010: Multi-Dataset Architecture](../decisions/0010-annotation-multi-dataset-architecture.md) — rationale for three datasets vs. unified schema
 - Argilla TaskDistribution docs: https://docs.argilla.io/latest/
