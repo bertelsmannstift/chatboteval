@@ -10,7 +10,9 @@ authors =[
 readme = "README.md"
 license = { file = "LICENSE.md" }
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "typer>=0.9",
+]
 
 [project.optional-dependencies]
 test = [
@@ -22,6 +24,9 @@ lint = [
 type = [
     "mypy>=1.19",
 ]
+
+[project.scripts]
+chatboteval = "chatboteval.cli.app:app"
 
 [build-system]
 requires = ["hatchling"]
