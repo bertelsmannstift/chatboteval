@@ -30,6 +30,8 @@ All labels for a task are presented simultaneously (joint labelling). For each t
 
 Question wording is locked here and reflects label semantics from the [Annotation Protocol](../methodology/annotation-protocol.md). English is the default display language for annotators; German translations are available as an optional display language. Wording may evolve as label semantics stabilise in the protocol; this document should be updated in sync.
 
+> **SSOT:** [Annotation Protocol](../methodology/annotation-protocol.md) is the single source of truth for label semantics. In case of drift, the protocol takes precedence.
+
 ### Task 1: Retrieval
 
 Unit of annotation: query–chunk pair $(q_i, c_{ik})$ — see [Annotation Protocol §Task 1](../methodology/annotation-protocol.md)
@@ -37,7 +39,7 @@ Unit of annotation: query–chunk pair $(q_i, c_{ik})$ — see [Annotation Proto
 | Label | Question (EN) | Question (DE) |
 |---|---|---|
 | `topically_relevant` | Does this passage contain information that is substantively relevant to the query? | Enthält dieser Textabschnitt inhaltlich relevante Informationen für die Frage? |
-| `evidence_sufficient` | Does this passage alone contain sufficient information to answer the query? | Reicht dieser Textabschnitt allein aus, um die Frage zu beantworten? |
+| `evidence_sufficient` | Does this passage provide sufficient evidence to support answering the query? | Enthält dieser Textabschnitt ausreichend Belege, um die Frage zu beantworten? |
 | `misleading` | Could this passage plausibly lead to an incorrect or distorted answer? | Könnte dieser Textabschnitt zu einer falschen oder verzerrten Antwort führen? |
 
 ### Task 2: Grounding
