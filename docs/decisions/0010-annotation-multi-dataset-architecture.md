@@ -23,9 +23,9 @@ All three datasets are assigned to workspaces (see [Workspace & Task Distributio
 - A unified schema would require either embedding K chunks as separate fields (bounded, inflexible) or repeating the (query, response) pair K times (creates duplicate annotation burden for grounding labels).
 - Argilla datasets enforce a single fixed schema, so all records must have the same fields. A Task 1 record has a `chunk` field; a Task 2 record has a `context` field. These cannot coexist cleanly in one schema.
 
-**Task 3 is separated from Task 2 to enable flexible workspace assignment.** Although Tasks 2 and 3 share the same record structure (`query` + `response`), their question sets are entirely disjoint. Separate datasets allow operators to assign tasks to workspaces freely — e.g., grouping by annotator expertise, splitting across teams, or consolidating into a single workspace. Dataset-to-workspace mapping is deployment configuration (see [Workspace & Task Distribution](../design/annotation-workspace-task-distribution.md)).
+**Task 3 is separated from Task 2 to enable flexible workspace assignment.** Although Tasks 2 and 3 share the same record structure (`query` + `response`), their question sets are entirely disjoint. Separate datasets allow operators to assign tasks to workspaces freely - e.g., grouping by annotator expertise, splitting across teams, or consolidating into a single workspace. Dataset-to-workspace mapping is deployment configuration (see [Workspace & Task Distribution](../design/annotation-workspace-task-distribution.md)).
 
-**Three datasets is the minimum needed — no more.** The multiplicity constraint forces Tasks 1 and 2 apart; the disjoint question sets make a Task 2 + Task 3 merge pointless (annotators would see irrelevant questions). Three datasets keeps schema and task cleanly aligned while leaving workspace assignment unconstrained.
+**Three datasets is the minimum needed, no more.** The multiplicity constraint forces Tasks 1 and 2 apart; the disjoint question sets make a Task 2 + Task 3 merge pointless (annotators would see irrelevant questions). Three datasets keeps schema and task cleanly aligned while leaving workspace assignment unconstrained.
 
 
 ## Alternatives Considered

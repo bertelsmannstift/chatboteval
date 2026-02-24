@@ -38,7 +38,7 @@ Argilla PostgreSQL
            ─ Task 1 aggregated per query before join
            ─ NULLs for missing cross-task annotations
 ```
->tbc on api / cli wrapper wording:
+>TODO - exact API / CLI wrapper wording below are TBC, update when decided.
 
 **Entry point:** `chatboteval export <output_dir>` (CLI) or `chatboteval.export(...)` (Python API)
 
@@ -46,7 +46,7 @@ Argilla PostgreSQL
 
 Three Argilla datasets, accessed via Argilla SDK. Filter: `status == "submitted"` only (exclude draft, discarded). 
 
-> NB: Workspace names are deployment configuration, not fixed architecture; current defaults  reflect one possible annotator stratification (see [Workspace & Task Distribution](annotation-workspace-task-distribution.md)).
+> NB: Workspace names and task assignment are deployment configuration, not fixed architecture; current defaults  reflect one possible annotator stratification (see [Workspace & Task Distribution](annotation-workspace-task-distribution.md)).
 
 | Dataset | Workspace | Records |
 |---------|-----------|---------|
@@ -56,11 +56,16 @@ Three Argilla datasets, accessed via Argilla SDK. Filter: `status == "submitted"
 
 ## Export Format & Schema
 
->NB: seperate PR will add separate `schema/` layer (add ref when done), this pydantic model be the SSOT.
-
 > **Depends on:** [Annotation Protocol](../methodology/annotation-protocol.md) for label definitions
 
-Export as CSV — flat format, one row per annotator response vector. Three task-specific CSVs with disjoint label columns and shared metadata.
+
+>**TODO**: a separate PR will add an independent `schema/` layer (add ref when done), this pydantic model will be the SSOT.
+
+Export as human-readable CSV, flat format, one row per annotator response vector. Three task-specific CSVs with disjoint label columns and shared metadata.
+
+> **Secondary format: HuggingFace Datasets** — Argilla v2 SDK natively supports `dataset.records.to_datasets()`. Deferred feature.
+>
+> **Alternative rejected: Nested JSON (one object per record with annotation array)** — Harder to compute inter-annotator agreement; requires unpacking before analysis.
 
 > Export schemas define what downstream pipelines need. They are not a mirror of what annotators see in the annotation interface (field naming and structure may differ).
 
@@ -72,7 +77,14 @@ Export as CSV — flat format, one row per annotator response vector. Three task
 | `annotator_id` | string | Annotator username |
 | `task` | string | Task identifier: `retrieval`, `grounding`, or `generation` |
 | `language` | string | Language code (e.g. `de`, `en`) |
-| `created_at` | datetime | Submission timestamp |
+| `inserted_at` | datetime | When the record was loaded into Argilla, tracks batch provenance, distinct from submission time |
+| `created_at` | datetime | Response submission timestamp |
+| `record_status` | string | Argilla record status: `pending` or `completed` (whether the record met its `TaskDistribution` overlap target) |
+
+
+**Not exported:**
+- `response_status` — we filter to `submitted` only; column would be constant
+- `_server_id` — Argilla-internal UUID; `record_uuid` already serves as the cross-dataset identifier
 
 ### Task 1: Retrieval — `retrieval.csv`
 
@@ -123,46 +135,38 @@ Unit: one row per `(query, answer, annotator)` triple.
 | `notes` | string | Optional annotator notes |
 | *(shared metadata)* | | |
 
-### Merged view (optional)
+### Merged view 
 
-Joins all three task CSVs on `record_uuid`. Task 1 requires an aggregation step first — multiple rows per query (one per chunk) must be reduced to a per-query summary before joining.
+Optional downstream merge joins all three task CSVs on `record_uuid`. Task 1 requires an aggregation step first, as multiple rows per query (one per chunk) must be reduced to a per-query summary before joining.
 
-```
-record_uuid │ query │ answer │ context_set
-│ [task1 aggregated] topically_relevant_any │ evidence_sufficient_any │ misleading_any
-│ [task2] support_present │ unsupported_claim_present │ contradicted_claim_present
-│          source_cited │ fabricated_source
-│ [task3] proper_action │ response_on_topic │ helpful │ incomplete │ unsafe_content
-│ [meta] annotator_id_t1 │ annotator_id_t2 │ annotator_id_t3 │ ...
-```
+**Task 1 aggregation:** boolean OR across all chunks for a query (`_any` suffix). E.g.:
+
+| record_uuid | chunk | topically_relevant | evidence_sufficient | misleading |
+|-------------|-------|--------------------|---------------------|------------|
+| abc-123 | c1 | true | false | false |
+| abc-123 | c2 | false | false | false |
+| abc-123 | c3 | true | true | false |
+| abc-123 | c4 | false | false | true |
+
+| record_uuid | topically_relevant_any | evidence_sufficient_any | misleading_any |
+|-------------|------------------------|-------------------------|----------------|
+| abc-123 | true | true | true |
+
+**Final Merged View (all tasks):** 
+
+| Group | Columns |
+|-------|---------|
+| Shared | `record_uuid`, `query`, `answer`, `context_set` |
+| Task 1 (aggregated) | `topically_relevant_any`, `evidence_sufficient_any`, `misleading_any` |
+| Task 2 | `support_present`, `unsupported_claim_present`, `contradicted_claim_present`, `source_cited`, `fabricated_source` |
+| Task 3 | `proper_action`, `response_on_topic`, `helpful`, `incomplete`, `unsafe_content` |
+| Meta | `annotator_id_t1`, `annotator_id_t2`, `annotator_id_t3`, ... |
 
 NULLs for any task where no submitted annotation exists for the record.
 
 ## Constraint Validation
 
 The [Annotation Protocol](../methodology/annotation-protocol.md) defines logical consistency constraints between labels (e.g. `evidence_sufficient = 1 ⇒ topically_relevant = 1`). The export pipeline validates these before metric computation and flags or rejects violating rows. See [Annotation Protocol](../methodology/annotation-protocol.md) for the full constraint list.
-
-## Schema Design Notes
-
-**Flat over nested:** One row per annotator response enables direct IAA calculation without unpacking; simpler cross-dataset joins on `record_uuid`.
-
-**Task-specific schemas:** Tasks have different annotation units (query–chunk vs answer–context vs query–answer) and disjoint label sets. Single unified schema would require many null columns.
-
-**CSV:** Human-readable; broadest compatibility with downstream pipelines and non-Python tooling.
-
-> **Secondary format: HuggingFace Datasets** — Argilla v2 SDK natively supports `dataset.records.to_datasets()`. Deferred feature.
-
-> **Alternative rejected: Nested JSON (one object per record with annotation array)** — Harder to compute inter-annotator agreement; requires unpacking before analysis.
-
-## Downstream Implications
-
-- Downstream pipelines must map task-specific role columns to HF-style conventions: `text` / `text_pair`.
-    - retrieval: `text=query`, `text_pair=chunk`
-    - grounding: `text=answer`, `text_pair=context_set`
-    - generation: `text=query`, `text_pair=answer`
-- Cross-dataset linking uses `record_uuid`; see [Import Pipeline](annotation-import-pipeline.md).
-- IAA calculation reads flat export directly, filtering by label column within each task CSV.
-- See [Annotation Protocol](../methodology/annotation-protocol.md) for label definitions.
 
 ## Failure Modes
 
@@ -186,4 +190,4 @@ The [Annotation Protocol](../methodology/annotation-protocol.md) defines logical
 
 - [Annotation Protocol](../methodology/annotation-protocol.md) — Label definitions, units of annotation, and logical constraints
 - [Import Pipeline](annotation-import-pipeline.md) — Upstream data flow
-- Quality Assurance (forthcoming) — IAA calculation consumes export output
+- Quality Assurance (forthcoming) — IAA calculation consumes export output (reads flat export directly, filtering by label column within each task CSV).

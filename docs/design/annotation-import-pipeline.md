@@ -60,7 +60,7 @@ Data pipeline to load captured chatbot query-response data into Argilla annotati
             │ (workspace & task distribution → annotators label via Argilla Web UI)
             ▼
 ```
->tbc on api / cli wrapper wording:
+>TODO - exact API / CLI wrapper wording below are TBC, update when decided.
 
 **Entry point:** CLI command (e.g., `chatboteval import <file>`)
 
@@ -74,7 +74,7 @@ The import pipeline operates exclusively against a canonical import schema. Sour
 
 ### Canonical record
 
->NB: seperate PR will add separate `schema/` layer (add ref when done), this pydantic model be the SSOT.
+>TODO: a separate PR will add an independent `schema/` layer (add ref when done), this pydantic model will be the SSOT.
 
 One record per RAG query-response cycle:
 
