@@ -19,3 +19,4 @@ Design documents focus on (this is guidance, not a required section template):
 - [Synthetic Test Set](synthetic-test-set.md) — Query generation, prompt variation, and response collection
 - [Reference-Based Evaluation](eval-reference-based.md) — Supervised evaluation using human-annotated ground truth
 - [Reference-Free Evaluation](eval-reference-free.md) — LLM-as-judge and heuristic evaluation without ground truth
+- [Packaging and Invocation Surface](packaging-invocation-surface.md) — Package structure, module boundaries, and invocation bindings
