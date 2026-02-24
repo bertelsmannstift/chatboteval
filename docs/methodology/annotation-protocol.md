@@ -1,7 +1,7 @@
 # Annotation Protocol
 
 This document defines the three annotation tasks, units, labels, and logical constraints required to compute metrics. It specifies:
-- the annotation tasks aligned to the metric families (retrieval / grounding / generation, [see Metrics Taxonomy](metrics-taxonomy.md)) 
+- the annotation tasks aligned to the metric families (retrieval / grounding / generation, [see Metrics Taxonomy](metrics-taxonomy.md))
 - the unit of annotation for each task
 - the binary label sets and their semantics
 - the logical consistency constraints that define valid multilabel vectors
@@ -32,6 +32,8 @@ Notation follows conventions set out in [Metrics Taxonomy](metrics-taxonomy.md).
 - For each query $q_i$, we consider a ranked list of retrieved chunks: ($q_i$, $c_{i1}$), ($q_i$, $c_{i2}$), $...$, ($q_i$, $c_{ik}$)
 - Retrieval annotation is performed per query-chunk pair ($q_i$, $c_{ik}$)
 
+> See [Glossary: Chunk](../glossary.md).
+
 ### Labels
 
 For each pair ($q_i$, $c_{ik}$), annotators must assign:
@@ -58,6 +60,8 @@ The following consistency constraints apply:
 
 - For each answer $a_i$, we consider the full retrieved context set $C_i$ shown to the model
 - Grounding annotation is performed per answer-context-set pair ($a_i$, $C_i$)
+
+> See [Glossary: Context set](../glossary.md).
 
 ### Labels
 
@@ -102,7 +106,15 @@ For each pair ($q_i$, $a_i$), annotators must assign:
 ### Label semantics
 
 - `proper_action`: The response selects the appropriate response type (e.g., answer, refusal, clarification request) given the query and system constraints.
-- `response_on_topic`: The response substantively addresses the user’s request.
+- `response_on_topic`: The response substantively addresses the user's request.
 - `helpful`: The response would enable a typical user to make progress on the task.
 - `incomplete`: The response fails to cover one or more required parts of the query or task framing.
 - `unsafe_content`: The response contains content that violates safety or policy constraints.
+
+
+## Rationale
+
+- **Three distinct tasks**: Separating retrieval, grounding, and generation keeps each task's unit of annotation conceptually coherent and avoids NA-heavy schemas that dilute rater attention and agreement.
+- **Binary labels**: Yes/no judgments minimise cognitive load and ambiguity, improving consistency and making downstream aggregation into metrics straightforward. Directly supports multilabel classification.
+- **No missing values**: Requiring complete fields prevents ambiguous denominators and silent missingness bias, ensuring metrics are well-defined across all annotated units.
+- **Answer-level grounding labels**: Answer-level presence flags capture the dominant grounding failure modes with far lower burden than claim-level decomposition, improving reliability and scalability.
