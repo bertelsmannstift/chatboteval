@@ -20,7 +20,6 @@ The following architectural constraints apply:
   - Evaluation is decomposed into retrieval, grounding, and generation
 - **Pipeline delegation**
   - Training and inference are executed via `tlmtc` as the canonical transfer-learning pipeline.
-  - `tlmtc` owns: data splitting and pre-processing, HPO, fine-tuning, inference, and model validation
 
 
 ## Rationale
@@ -49,3 +48,4 @@ The following architectural constraints apply:
 - Evaluation requires an annotation workflow and a labeled dataset snapshot; the framework cannot operate in a reference-free mode.
 - The scoring backend is constrained to supervised cross-encoder multilabel classification; metric computation assumes model outputs are aligned with the annotation protocol.
 - The annotation protocol must be multilabel-compatible (non–mutually-exclusive binary dimensions); continuous or ranking-style judgments are out of scope.
+- `tlmtc` owns: data splitting and pre-processing, HPO, fine-tuning, inference, and model validation
