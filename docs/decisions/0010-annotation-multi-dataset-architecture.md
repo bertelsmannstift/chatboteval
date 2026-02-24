@@ -21,11 +21,11 @@ All three datasets are assigned to workspaces (see [Workspace & Task Distributio
 **Task 1 and Task 2 have incompatible record multiplicities.** Task 1 produces K records per input (one per retrieved chunk); Task 2 produces one record per input. This difference in cardinality is the fundamental constraint that prevents sharing a dataset:
 
 - A unified schema would require either embedding K chunks as separate fields (bounded, inflexible) or repeating the (query, response) pair K times (creates duplicate annotation burden for grounding labels).
-- Argilla datasets enforce a single fixed schema — all records must have the same fields. A Task 1 record has a `chunk` field; a Task 2 record has a `context` field. These cannot coexist cleanly in one schema.
+- Argilla datasets enforce a single fixed schema, so all records must have the same fields. A Task 1 record has a `chunk` field; a Task 2 record has a `context` field. These cannot coexist cleanly in one schema.
 
-**Task 3 is separated from Task 2 to enforce annotator stratification.** Tasks 1 and 2 share one workspace; Task 3 lives in another. Keeping them in separate datasets means workspace assignment naturally controls access — annotators in one workspace never see the other's records. Workspace names and dataset-to-workspace mapping are deployment configuration (see [Workspace & Task Distribution](../design/annotation-workspace-task-distribution.md)).
+**Task 3 is separated from Task 2 to enable flexible workspace assignment.** Although Tasks 2 and 3 share the same record structure (`query` + `response`), their question sets are entirely disjoint. Separate datasets allow operators to assign tasks to workspaces freely — e.g., grouping by annotator expertise, splitting across teams, or consolidating into a single workspace. Dataset-to-workspace mapping is deployment configuration (see [Workspace & Task Distribution](../design/annotation-workspace-task-distribution.md)).
 
-**Three datasets is the minimum needed — no more.** Tasks 2 and 3 share the same record structure (`query` + `response`) and could theoretically share a schema, but their questions differ entirely and they go to different annotator groups. Separate datasets keeps schema, workspace, and task cleanly aligned.
+**Three datasets is the minimum needed — no more.** The multiplicity constraint forces Tasks 1 and 2 apart; the disjoint question sets make a Task 2 + Task 3 merge pointless (annotators would see irrelevant questions). Three datasets keeps schema and task cleanly aligned while leaving workspace assignment unconstrained.
 
 
 ## Alternatives Considered
