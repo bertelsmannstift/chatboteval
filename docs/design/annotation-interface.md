@@ -151,7 +151,7 @@ Each task dataset includes one optional free-text field per annotated unit:
 - **Primary:** CSV — direct input to downstream evaluation pipeline
 - **Secondary:** HuggingFace Datasets (Arrow/Parquet) via Argilla SDK `to_datasets()` (deferred)
 
-Full column definitions and task-specific schemas: [Annotation Export Schema](annotation-export-schema.md).
+Full column definitions and task-specific schemas: [Export Pipeline](annotation-export-pipeline.md).
 
 **Data flow:** Annotations stored in Argilla (PostgreSQL backend) → chatboteval exports to CSV (primary) / HuggingFace Datasets (deferred) via Argilla SDK → downstream evaluation pipeline reads CSV.
 
@@ -168,7 +168,7 @@ Full column definitions and task-specific schemas: [Annotation Export Schema](an
 ## References
 
 - [Decision 0001: Argilla Annotation Platform](../decisions/0001-annotation-argilla-platform.md)
-- [Annotation Export Schema](annotation-export-schema.md)
+- [Export Pipeline](annotation-export-pipeline.md)
 - [Annotation UI Presentation](annotation-presentation.md) — rationale for joint labelling and visibility contract design
 - [Annotation Tasks](../methodology/annotation-tasks.md)
 - [Decision 0008: Authentication](../decisions/0008-annotation-interface-auth.md)

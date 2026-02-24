@@ -23,7 +23,7 @@ All three datasets are assigned to workspaces (see [Workspace & Task Distributio
 - A unified schema would require either embedding K chunks as separate fields (bounded, inflexible) or repeating the (query, response) pair K times (creates duplicate annotation burden for grounding labels).
 - Argilla datasets enforce a single fixed schema — all records must have the same fields. A Task 1 record has a `chunk` field; a Task 2 record has a `context` field. These cannot coexist cleanly in one schema.
 
-**Task 3 is separated from Task 2 to enforce annotator stratification.** Tasks 1 and 2 go to junior annotators (`grounding_junior` workspace); Task 3 goes to domain experts (`domain_experts` workspace). Keeping them in separate datasets means workspace assignment naturally controls access — annotators in `grounding_junior` never see Task 3 records, and vice versa.
+**Task 3 is separated from Task 2 to enforce annotator stratification.** Tasks 1 and 2 share one workspace; Task 3 lives in another. Keeping them in separate datasets means workspace assignment naturally controls access — annotators in one workspace never see the other's records. Workspace names and dataset-to-workspace mapping are deployment configuration (see [Workspace & Task Distribution](../design/annotation-workspace-task-distribution.md)).
 
 **Three datasets is the minimum needed — no more.** Tasks 2 and 3 share the same record structure (`query` + `response`) and could theoretically share a schema, but their questions differ entirely and they go to different annotator groups. Separate datasets keeps schema, workspace, and task cleanly aligned.
 
@@ -41,7 +41,7 @@ Rejected:
 
 **Two datasets: one per annotator group**
 
-`grounding_junior` dataset for Tasks 1+2 combined; `domain_experts` for Task 3.
+`retrieval_grounding` dataset for Tasks 1+2 combined; `generation` for Task 3.
 
 Rejected:
 - Task 1 produces K records per input; Task 2 produces 1. If loaded into the same dataset, the schema must accommodate both structures, reintroducing the multiplicity problem.
@@ -67,6 +67,6 @@ Rejected: same problem — Argilla schemas are static. You cannot route Task 1 a
 - [Workspace & Task Distribution](../design/annotation-workspace-task-distribution.md) — workspace assignment and dataset schemas
 - [Import Pipeline](../design/annotation-import-pipeline.md) — routing logic
 - [Export Pipeline](../design/annotation-export-pipeline.md) — per-dataset CSV export and merged view
-- [Annotation Export Schema](../design/annotation-export-schema.md) — export schema per task
+- [Export Pipeline](../design/annotation-export-pipeline.md) — export schema and pipeline per task
 - [Annotation Protocol](../methodology/annotation-protocol.md) — task definitions and record units
 - [Annotation UI Presentation](../design/annotation-presentation.md) — question wording and UI visibility contract

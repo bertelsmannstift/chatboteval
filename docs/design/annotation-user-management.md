@@ -6,7 +6,7 @@ Argilla user account provisioning and credential management for the annotation p
 
 **In scope:**
 - Create and assign annotator accounts in Argilla
-- Assign users to workspaces (domain experts → `domain_experts`, junior → `grounding_junior`)
+- Assign users to workspaces (workspace names are deployment config; defaults: `retrieval_grounding`, `generation`)
 - Manage API key for import/export scripts
 - Handle password resets
 

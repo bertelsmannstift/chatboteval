@@ -17,7 +17,7 @@ Configuration of Argilla workspaces and annotation task assignment for stratifie
 
 ```
 ┌──────────────────────────────────┐   ┌──────────────────────────────────┐
-│  grounding_junior workspace      │   │  domain_experts workspace        │
+│  retrieval_grounding workspace      │   │  generation workspace        │
 ├──────────────────────────────────┤   ├──────────────────────────────────┤
 │  task1_retrieval                 │   │  task3_generation                │
 │  task2_grounding                 │   │                                  │
@@ -27,20 +27,22 @@ Configuration of Argilla workspaces and annotation task assignment for stratifie
   (retrieval + grounding)                   (generation quality)
 ```
 
+Workspace names describe the tasks they contain, not the annotator roles assigned to them. Names and dataset-to-workspace mapping are deployment configuration — the architecture requires only that each dataset belongs to exactly one workspace.
+
 Two workspaces map to the two annotator groups:
 
 | Workspace | Assigned annotators | Tasks |
 |---|---|---|
-| `domain_experts` | Domain expert annotators | Task 3: `proper_action`, `response_on_topic`, `helpful`, `incomplete`, `unsafe_content` |
-| `grounding_junior` | Junior annotators | Task 1: `topically_relevant`, `evidence_sufficient`, `misleading`; Task 2: `support_present`, `unsupported_claim_present`, `contradicted_claim_present`, `source_cited`, `fabricated_source` |
+| `generation` | Domain expert annotators | Task 3: `proper_action`, `response_on_topic`, `helpful`, `incomplete`, `unsafe_content` |
+| `retrieval_grounding` | Junior annotators | Task 1: `topically_relevant`, `evidence_sufficient`, `misleading`; Task 2: `support_present`, `unsupported_claim_present`, `contradicted_claim_present`, `source_cited`, `fabricated_source` |
 
 Three Argilla datasets are required — Tasks 1 and 2 cannot share a dataset because their field structures are incompatible (per-chunk vs. per-answer-context unit):
 
 | Dataset | Workspace | Task | Fields shown to annotator |
 |---|---|---|---|
-| `task1_retrieval` | `grounding_junior` | Task 1: Retrieval | `query`, `chunk` (primary); `answer` (supporting) |
-| `task2_grounding` | `grounding_junior` | Task 2: Grounding | `answer`, `context_set` (primary); `query` (supporting) |
-| `task3_generation` | `domain_experts` | Task 3: Generation | `query`, `answer` (primary); `retrieved_passages` (supporting) |
+| `task1_retrieval` | `retrieval_grounding` | Task 1: Retrieval | `query`, `chunk` (primary); `answer` (supporting) |
+| `task2_grounding` | `retrieval_grounding` | Task 2: Grounding | `answer`, `context_set` (primary); `query` (supporting) |
+| `task3_generation` | `generation` | Task 3: Generation | `query`, `answer` (primary); `retrieved_passages` (supporting) |
 
 Each annotator is assigned to exactly one workspace. Argilla's workspace isolation ensures annotators only see records and questions for their assigned tasks.
 
@@ -92,7 +94,7 @@ Argilla's `TaskDistribution` controls how many annotators are assigned per recor
 ## References
 
 - [User Management](annotation-user-management.md) — Account creation and workspace assignment
-- [Quality Assurance](annotation-quality-assurance.md) — MAMA cycle overlap configuration and IAA measurement
+- Quality Assurance (forthcoming) — MAMA cycle overlap configuration and IAA measurement
 - [Export Pipeline](annotation-export-pipeline.md) — post-submission constraint validation
 - [Annotation Protocol](../methodology/annotation-protocol.md) — Label definitions and logical constraints
 - [Annotation UI Presentation](annotation-presentation.md) — Joint labelling and visibility contract rationale
