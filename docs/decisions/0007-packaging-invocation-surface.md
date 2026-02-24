@@ -1,6 +1,6 @@
 # 0007: Packaging and invocation surfaces
 
-Status: Draft
+Status: Accepted
 
 
 ## Decision
@@ -15,6 +15,8 @@ The system exposes two supported invocation surfaces:
 
 The following architectural constraints apply:
 
+- **CLI framework**
+  - The CLI is implemented using Typer.
 - **Library-first architecture**
   - All core logic and orchestration lives in library modules 
   - The CLI is a thin wrapper that parses inputs and delegates execution to the same library functions. No business logic is duplicated in the CLI layer.
@@ -31,6 +33,7 @@ The following architectural constraints apply:
 
 - **Standard packaging lowers adoption friction** A normal pip-installable package aligns with user expectations and modern Python tooling.
 - **Two invocation modes support different workflows** The Python API enables integration into notebooks, scripts, and pipelines. The CLI enables operational usage and reproducible runs from the shell.
+- **Typer CLI framework** This supports a thin, typed CLI It enables declarative command definitions driven by type hints, reinforcing the library-first layering.
 - **Library-first prevents logic drift** Centralizing business logic in importable modules ensures consistent behavior between CLI and Python usage, simplifies testing, and reduces maintenance risk.
 - **Single entry point reduces cognitive load** One canonical command simplifies documentation, onboarding, and support.
 - **Src-layout enforces discipline** It prevents accidental reliance on local paths and ensures imports behave the same in development and after installation.
@@ -42,5 +45,6 @@ The following architectural constraints apply:
   - CLI interface layer
   - Core library modules
 - Tests should target the library layer directly; CLI tests focus on argument parsing and wiring.
+- Typer is a runtime dependency for the CLI surface.
 - Changes to the public API require explicit versioning consideration.
 - Core workflows must be invocable via both the Python API and the CLI. Documentation must provide parallel examples for each.

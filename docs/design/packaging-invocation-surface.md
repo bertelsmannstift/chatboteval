@@ -43,7 +43,7 @@ src/
 **Boundary rules**
 
 - `chatboteval.cli` is a thin execution layer over the API. May import `api`, but must not import `core` directly.
-- `chatboteval.api` defines the supported Python interface. May import `core`, but must not depend on `cli`.
+- `chatboteval.api` contains internal orchestration. May import `core`, but must not depend on `cli`.
 - `chatboteval.core` contains implementation details and is explicitly not public. Must not depend on `cli` or leak into the public API surface.
 
 Allowed dependency direction:
@@ -55,18 +55,16 @@ cli ⟹ api ⟹ core
 
 **Python import surface**
 
-- `api/` provides the application service layer:
+- `api/` provides the application service layer (internal orchestration):
   - imports and orchestrates functions from `core/`
-  - exports stable user-facing call signatures in `chatboteval/api/__init__.py`
-  - isolates users from internal structure
+  - defines internal entrypoints used by the CLI and re-exported selectively at the top-level
+  - isolates the CLI and top-level API from internal structure
 - curated API re-exported at the top-level via `chatboteval/__init__.py`
-- The supported import surface is the top-level `chatboteval` namespace only.
-  Imports from `chatboteval.api` are considered internal and are not part of the
-  stable public interface.
+- Only the top-level `chatboteval` namespace is a supported stable import surface.
+  Imports from `chatboteval.api` are considered internal.
 
 **CLI surface**
 
-- CLI is implemented using Typer
 - Each CLI command is implemented in `cli/commands/` and registered in `chatboteval/cli/app.py`
 - CLI is exposed via a single console-script entry defined in `pyproject.toml`
 
