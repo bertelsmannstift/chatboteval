@@ -2,13 +2,13 @@
 
 ## What This Is
 
-An open-source Python framework for evaluating RAG (retrieval-augmented generation) chatbots. Combines a **human annotation interface** for domain experts to label query-response pairs, an **AI workflow for query generation and variation**, and an **automated evaluation pipeline** using transformer-based models for reference-based and reference-free evaluation.
+An open-source Python framework for evaluating RAG (retrieval-augmented generation) chatbots. Combines a **human annotation interface** for domain experts to label query-response pairs, an **AI workflow for query generation and variation**, and an **automated evaluation pipeline** using transformer-based models for reference-based evaluation.
 
 ## Core Components
 
 1. **Query Generation** — AI workflow for synthetic query generation and variation
 2. **Annotation Interface** — Web-based UI where reviewers label query-response pairs
-3. **Evaluation Framework** — Reproducible ML pipeline for training and inference on evaluation models
+3. **Evaluation Framework** — Label-based metric production system backed by supervised transfer learning
 
 ## Getting Started
 
