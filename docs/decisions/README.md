@@ -14,3 +14,4 @@ Each decision document follows this structure:
 - [0003: Self-Hosted Only Deployment](0003-self-hosted-only.md) — Accepted: cloud-hosted deployment out of scope
 - [0004: Offline Evaluation Only](0004-offline-evaluation-only.md) — Accepted: no real-time chatbot integration
 - [0005: Storage Format](0005-storage-format.md) — Draft: how annotation data is stored and exported
+- [0007: Invocation Surface](0007-packaging-invocation-surface.md) — Accepted: two supported invocation surfaces (Python API and CLI)
