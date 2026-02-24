@@ -17,18 +17,18 @@ All labels for a task are presented simultaneously (joint labelling). For each t
 
 ### Visibility contract per task
 
-| Task | Primary content (always visible) | Supporting context |
+| Task | Primary content | Supporting context |
 |---|---|---|
-| Task 1: Retrieval | Query + passage | Generated answer |
+| Task 1: Retrieval | Query + chunk | Generated answer |
 | Task 2: Grounding | Answer + retrieved context set | Query |
 | Task 3: Generation | Query + answer | Retrieved passages |
 
-> Argilla v2 does not support collapsible field panels — field ordering is the only mechanism available. Supporting context fields must be positioned after primary content fields in the `rg.Settings` field list.
+> Argilla v2 does not support collapsible field panels natively. Workaround: `rg.CustomField` with `advanced_mode=True` renders a `<details>`/`<summary>` HTML element for browser-native collapsibility without a custom frontend. See [Annotation Interface](annotation-interface.md) for implementation details.
 
 
 ## Annotator-Facing Questions
 
-Question wording is locked here and reflects label semantics from the [Annotation Protocol](../methodology/annotation-protocol.md). English is the primary wording for design and cross-team reference; German is the annotator-facing display language. Wording may evolve as label semantics stabilise in the protocol; this document should be updated in sync.
+Question wording is locked here and reflects label semantics from the [Annotation Protocol](../methodology/annotation-protocol.md). English is the default display language for annotators; German translations are available as an optional display language. Wording may evolve as label semantics stabilise in the protocol; this document should be updated in sync.
 
 ### Task 1: Retrieval
 
@@ -78,7 +78,7 @@ Each task dataset includes one optional free-text field per annotated unit:
 
 **Visibility contract:** Primary content is the minimal unit needed for the labelling task. Supporting context is included to aid consistency but kept secondary to reduce anchoring bias on the primary judgement.
 
-**English as primary wording:** English is the design-time source of truth for question wording (design review, cross-team reference, code configuration). German translations are the annotator-facing display strings.
+**English as default display language:** English is both the design-time source of truth and the default annotator-facing display language. German translations are available as an optional display language.
 
 
 ## Implications
