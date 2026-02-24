@@ -17,8 +17,6 @@ Each task produces a separate CSV. Columns are task-specific; shared metadata co
 
 > **Note:** Export schemas define what downstream pipelines need. They are not a mirror of what annotators see in the annotation interface (field naming and structure may differ).
 
-> **SSOT:** [Annotation Protocol](../methodology/annotation-protocol.md) is the single source of truth for label semantics. In case of drift, the protocol takes precedence.
-
 ### Shared metadata columns (all tasks)
 
 | Column | Type | Description |

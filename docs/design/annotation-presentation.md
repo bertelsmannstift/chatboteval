@@ -30,8 +30,6 @@ All labels for a task are presented simultaneously (joint labelling). For each t
 
 Question wording is locked here and reflects label semantics from the [Annotation Protocol](../methodology/annotation-protocol.md). English is the default display language for annotators; German translations are available as an optional display language. Wording may evolve as label semantics stabilise in the protocol; this document should be updated in sync.
 
-> **SSOT:** [Annotation Protocol](../methodology/annotation-protocol.md) is the single source of truth for label semantics. In case of drift, the protocol takes precedence.
-
 ### Task 1: Retrieval
 
 Unit of annotation: query–chunk pair $(q_i, c_{ik})$ — see [Annotation Protocol §Task 1](../methodology/annotation-protocol.md)
