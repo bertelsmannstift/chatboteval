@@ -16,6 +16,8 @@ Design documents focus on (this is guidance, not a required section template):
 ## Index
 
 - [Annotation Interface](annotation-interface.md) — Human annotation workflow and Argilla integration
+- [Annotation Export Schema](annotation-export-schema.md) — CSV export format and task-specific schemas
+- [Annotation UI Presentation](annotation-presentation.md) — UI presentation model, field visibility, and question wording
 - [Synthetic Test Set](synthetic-test-set.md) — Query generation, prompt variation, and response collection
 - [Reference-Based Evaluation](eval-reference-based.md) — Supervised evaluation using human-annotated ground truth
 - [Reference-Free Evaluation](eval-reference-free.md) — LLM-as-judge and heuristic evaluation without ground truth

@@ -77,7 +77,7 @@ See [ADR-0006](../decisions/0006-annotation-tasks.md) for label definitions and 
 
 ### Visibility contract
 
-Primary content is the minimal unit needed for the labelling task. Supporting context aids consistency but is kept secondary to reduce anchoring bias. Rationale: [ADR-0007](../decisions/0007-annotation-presentation.md).
+Primary content is the minimal unit needed for the labelling task. Supporting context aids consistency but is kept secondary to reduce anchoring bias. Rationale: [Annotation UI Presentation](annotation-presentation.md).
 
 ```
 Task 1: Retrieval
@@ -151,7 +151,7 @@ Each task dataset includes one optional free-text field per annotated unit:
 - **Primary:** CSV — direct input to downstream evaluation pipeline
 - **Secondary:** HuggingFace Datasets (Arrow/Parquet) via Argilla SDK `to_datasets()` (deferred)
 
-Full column definitions and task-specific schemas in the Export Pipeline design doc (forthcoming PR). Format rationale: [ADR-0005](../decisions/0005-annotation-export-schema.md).
+Full column definitions and task-specific schemas: [Annotation Export Schema](annotation-export-schema.md).
 
 **Data flow:** Annotations stored in Argilla (PostgreSQL backend) → chatboteval exports to CSV (primary) / HuggingFace Datasets (deferred) via Argilla SDK → downstream evaluation pipeline reads CSV.
 
@@ -168,9 +168,9 @@ Full column definitions and task-specific schemas in the Export Pipeline design 
 ## References
 
 - [Decision 0001: Argilla Annotation Platform](../decisions/0001-annotation-argilla-platform.md)
-- [Decision 0005: Annotation Export Schema](../decisions/0005-annotation-export-schema.md)
+- [Annotation Export Schema](annotation-export-schema.md)
+- [Annotation UI Presentation](annotation-presentation.md) — rationale for joint labelling and visibility contract design
 - [Decision 0006: Annotation Tasks](../decisions/0006-annotation-tasks.md)
-- [Decision 0007: Annotation UI Presentation](../decisions/0007-annotation-presentation.md) — rationale for joint labelling and visibility contract design
 - [Decision 0008: Authentication](../decisions/0008-annotation-interface-auth.md)
 - Deployment design doc (forthcoming PR) — Docker Compose stack and infrastructure setup
 - Argilla docs: https://docs.argilla.io/latest/

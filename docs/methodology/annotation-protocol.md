@@ -6,7 +6,7 @@ This document defines the three annotation tasks, units, labels, and logical con
 - the binary label sets and their semantics
 - the logical consistency constraints that define valid multilabel vectors
 
-> **Depended on by:** [ADR-0005](0005-annotation-export-schema.md), [ADR-0007](0007-annotation-presentation.md)
+> **Depended on by:** [Annotation Export Schema](../design/annotation-export-schema.md), [Annotation UI Presentation](../design/annotation-presentation.md)
 
 
 ## Annotation tasks

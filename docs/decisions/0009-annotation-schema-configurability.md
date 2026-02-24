@@ -30,4 +30,4 @@ Any future schema change is a breaking design decision requiring a new ADR and n
 - Changing annotation dimensions requires modifying setup code and re-creating Argilla datasets
 - Schema definitions should live in a dedicated module, not inline with orchestration logic, to make the fork-and-modify path obvious
 - Any schema change requires updating/reviewing the annotation-related ADRs first (metrics taxonomy + annotation tasks + presentation), then updating the code implementation
-- See [ADR-0006: Annotation Tasks](0006-annotation-tasks.md) and [ADR-0007: Annotation UI Presentation](0007-annotation-presentation.md) for current schema definitions
+- See [ADR-0006: Annotation Tasks](0006-annotation-tasks.md) and [Annotation UI Presentation](../design/annotation-presentation.md) for current schema definitions
