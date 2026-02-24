@@ -16,5 +16,4 @@ Each decision document follows this structure:
 - [0007: Invocation Surface](0007-packaging-invocation-surface.md) — Accepted: two supported invocation surfaces (Python API and CLI)
 - [0008: Annotation Authentication Interface](0008-annotation-interface-auth.md) — Accepted: Argilla built-in auth with role mapping
 - [0009: Annotation Schema Configurability](0009-annotation-schema-configurability.md) — Accepted: hardcoded schemas for v1.0, configurability deferred
-- [0010: Annotation Entrypoints](0010-annotation-entrypoints.md) — Draft: annotation access via URL, Python API, and CLI
 - [0013: Multi-Dataset Architecture](0013-annotation-multi-dataset-architecture.md) — Draft: three separate Argilla datasets (one per task)
