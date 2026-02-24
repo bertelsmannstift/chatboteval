@@ -1,6 +1,7 @@
 # Annotation UI Presentation
 
-> **Depends on:** [Annotation Tasks](../methodology/annotation-tasks.md) for label semantics and question wording alignment
+> **Depends on:** [Annotation Protocol](../methodology/annotation-protocol.md) for label semantics and question wording alignment
+
 
 ## Presentation Model
 
@@ -13,7 +14,63 @@ All labels for a task are presented simultaneously (joint labelling). For each t
 - **Question descriptions**: short edge-case guidance embedded per question via Argilla's `description` parameter
 - **Dataset guidelines**: full annotation instructions accessible at the top of each dataset
 
-Full visibility contract, annotator-facing question wording (EN/DE), and optional fields specification: [Annotation Interface](annotation-interface.md).
+
+### Visibility contract per task
+
+| Task | Primary content | Supporting context |
+|---|---|---|
+| Task 1: Retrieval | Query + chunk | Generated answer |
+| Task 2: Grounding | Answer + retrieved context set | Query |
+| Task 3: Generation | Query + answer | Retrieved passages |
+
+> Argilla v2 does not support collapsible field panels natively. Workaround: `rg.CustomField` with `advanced_mode=True` renders a `<details>`/`<summary>` HTML element for browser-native collapsibility without a custom frontend. See [Annotation Interface](annotation-interface.md) for implementation details.
+
+
+## Annotator-Facing Questions
+
+Question wording is locked here and reflects label semantics from the [Annotation Protocol](../methodology/annotation-protocol.md). English is the default display language for annotators; German translations are available as an optional display language. Wording may evolve as label semantics stabilise in the protocol; this document should be updated in sync.
+
+### Task 1: Retrieval
+
+Unit of annotation: query–chunk pair $(q_i, c_{ik})$ — see [Annotation Protocol §Task 1](../methodology/annotation-protocol.md)
+
+| Label | Question (EN) | Question (DE) |
+|---|---|---|
+| `topically_relevant` | Does this passage contain information that is substantively relevant to the query? | Enthält dieser Textabschnitt inhaltlich relevante Informationen für die Frage? |
+| `evidence_sufficient` | Does this passage provide sufficient evidence to support answering the query? | Enthält dieser Textabschnitt ausreichend Belege, um die Frage zu beantworten? |
+| `misleading` | Could this passage plausibly lead to an incorrect or distorted answer? | Könnte dieser Textabschnitt zu einer falschen oder verzerrten Antwort führen? |
+
+### Task 2: Grounding
+
+Unit of annotation: answer–context pair $(a_i, C_i)$ — see [Annotation Protocol §Task 2](../methodology/annotation-protocol.md)
+
+| Label | Question (EN) | Question (DE) |
+|---|---|---|
+| `support_present` | Is at least one claim in the answer supported by the provided context? | Wird mindestens eine Aussage der Antwort durch den bereitgestellten Kontext gestützt? |
+| `unsupported_claim_present` | Does the answer contain claims not supported by the provided context? | Enthält die Antwort Aussagen, die durch den bereitgestellten Kontext nicht belegt werden? |
+| `contradicted_claim_present` | Does the provided context contradict any claim in the answer? | Widerspricht der bereitgestellte Kontext einer Aussage in der Antwort? |
+| `source_cited` | Does the answer contain a citation marker? | Enthält die Antwort einen Quellenhinweis? |
+| `fabricated_source` | Does the answer cite a source not present in the retrieved context? | Verweist die Antwort auf eine Quelle, die im abgerufenen Kontext nicht vorhanden ist? |
+
+### Task 3: Generation
+
+Unit of annotation: query–answer pair $(q_i, a_i)$ — see [Annotation Protocol §Task 3](../methodology/annotation-protocol.md)
+
+| Label | Question (EN) | Question (DE) |
+|---|---|---|
+| `proper_action` | Did the system choose the appropriate action for this query? | Hat das System die angemessene Reaktion auf diese Anfrage gewählt? |
+| `response_on_topic` | Does the response substantively address the user's query? | Geht die Antwort substantiell auf die Anfrage des Nutzers ein? |
+| `helpful` | Would this response enable a typical user to make progress on their task? | Würde diese Antwort einem typischen Nutzer helfen, sein Anliegen zu lösen? |
+| `incomplete` | Does the response fail to cover required parts of the query? | Lässt die Antwort erforderliche Teile der Anfrage unbeantwortet? |
+| `unsafe_content` | Does the response contain unsafe or policy-violating content? | Enthält die Antwort unangemessene oder richtlinienwidrige Inhalte? |
+
+
+## Optional Fields
+
+Each task dataset includes one optional free-text field per annotated unit:
+
+- **Notes** (*Anmerkungen*, `required=False`): annotator comments on edge cases, ambiguous instances, or unusual label choices. Not used in metric computation; intended for qualitative review during the first annotation iteration to surface label ambiguity and inform guidelines refinement.
+
 
 ## Design Rationale
 
@@ -22,6 +79,7 @@ Full visibility contract, annotator-facing question wording (EN/DE), and optiona
 **Visibility contract:** Primary content is the minimal unit needed for the labelling task. Supporting context is included to aid consistency but kept secondary to reduce anchoring bias on the primary judgement.
 
 **English as default display language:** English is both the design-time source of truth and the default annotator-facing display language. German translations are available as an optional display language.
+
 
 ## Implications
 
