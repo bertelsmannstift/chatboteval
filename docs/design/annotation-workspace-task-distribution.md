@@ -5,19 +5,33 @@ Configuration of Argilla workspaces and annotation task assignment for stratifie
 ## Responsibilities
 
 **In scope:**
-- Define workspace structure (which datasets belong to which workspace)
-- Assign annotators to workspaces so each group sees only their schema
+- Document architectural constraints on workspace/dataset structure
+- Provide sensible default workspace configuration (this is an operations-level configuration)
 - Configure `TaskDistribution` to control record assignment and overlap for IAA
 
 **Out of scope:**
 - User account creation (see [User Management](annotation-user-management.md))
 - Annotation task and label definition (see [Annotation Protocol](../methodology/annotation-protocol.md))
 
-## Workspace Structure
+## Architectural Constraints
+
+Three Argilla datasets are required — Tasks 1 and 2 cannot share a dataset because their field structures are incompatible (per-chunk vs. per-answer-context unit). See [ADR-0010](../decisions/0010-annotation-multi-dataset-architecture.md).
+
+| Dataset | Task | Fields shown to annotator |
+|---|---|---|
+| `task1_retrieval` | Task 1: Retrieval | `query`, `chunk` (primary); `answer` (supporting) |
+| `task2_grounding` | Task 2: Grounding | `answer`, `context_set` (primary); `query` (supporting) |
+| `task3_generation` | Task 3: Generation | `query`, `answer` (primary); `retrieved_passages` (supporting) |
+
+Beyond that, workspace structure is an operational decision configured at setup time. The only architectural requirement is that each dataset belongs to exactly one workspace. Annotator-to-workspace assignment can be changed freely at runtime; dataset-to-workspace mapping is fixed at dataset creation (Argilla limitation — changing it requires recreating the datasets).
+
+## Default Configuration
+
+The default setup groups datasets into two workspaces aligned with annotator stratification by expertise:
 
 ```
 ┌──────────────────────────────────┐   ┌──────────────────────────────────┐
-│  retrieval_grounding workspace      │   │  generation workspace        │
+│  retrieval_grounding workspace   │   │  generation workspace            │
 ├──────────────────────────────────┤   ├──────────────────────────────────┤
 │  task1_retrieval                 │   │  task3_generation                │
 │  task2_grounding                 │   │                                  │
@@ -27,22 +41,7 @@ Configuration of Argilla workspaces and annotation task assignment for stratifie
   (retrieval + grounding)                   (generation quality)
 ```
 
-Workspace names describe the tasks they contain, not the annotator roles assigned to them. Names and dataset-to-workspace mapping are deployment configuration — the architecture requires only that each dataset belongs to exactly one workspace.
-
-Two workspaces map to the two annotator groups:
-
-| Workspace | Assigned annotators | Tasks |
-|---|---|---|
-| `generation` | Domain expert annotators | Task 3: `proper_action`, `response_on_topic`, `helpful`, `incomplete`, `unsafe_content` |
-| `retrieval_grounding` | Junior annotators | Task 1: `topically_relevant`, `evidence_sufficient`, `misleading`; Task 2: `support_present`, `unsupported_claim_present`, `contradicted_claim_present`, `source_cited`, `fabricated_source` |
-
-Three Argilla datasets are required — Tasks 1 and 2 cannot share a dataset because their field structures are incompatible (per-chunk vs. per-answer-context unit):
-
-| Dataset | Workspace | Task | Fields shown to annotator |
-|---|---|---|---|
-| `task1_retrieval` | `retrieval_grounding` | Task 1: Retrieval | `query`, `chunk` (primary); `answer` (supporting) |
-| `task2_grounding` | `retrieval_grounding` | Task 2: Grounding | `answer`, `context_set` (primary); `query` (supporting) |
-| `task3_generation` | `generation` | Task 3: Generation | `query`, `answer` (primary); `retrieved_passages` (supporting) |
+This is a sensible default, not a hard constraint. Alternative configurations (e.g., a single workspace for all tasks, or three workspaces — one per dataset) can be set by re-running `chatboteval annotation setup` with different workspace parameters. User assignment is reconfigurable at any time; dataset-to-workspace mapping requires dataset recreation.
 
 Each annotator is assigned to exactly one workspace. Argilla's workspace isolation ensures annotators only see records and questions for their assigned tasks.
 
@@ -50,7 +49,7 @@ Each annotator is assigned to exactly one workspace. Argilla's workspace isolati
 
 Each dataset is configured via an Argilla `Settings` object defining fields, questions, and metadata. Schemas are hardcoded for v1.0 — see [ADR-0009](../decisions/0009-annotation-schema-configurability.md).
 
-Field order follows the visibility contract (primary content first, supporting context last) — see [Annotation UI Presentation](annotation-presentation.md). Full question wording (EN/DE) and field definitions: [Annotation Interface](annotation-interface.md). Full `rg.Settings` schemas with German question titles: see corresponding GitHub Issue.
+Field order follows the visibility contract (primary content first, supporting context last) — see [Annotation Interface §Visibility contract](annotation-interface.md). Full question wording (EN/DE): [Annotation Interface §Annotator-facing questions](annotation-interface.md).
 
 ### Logical constraint enforcement
 
@@ -97,7 +96,7 @@ Argilla's `TaskDistribution` controls how many annotators are assigned per recor
 - Quality Assurance (forthcoming) — MAMA cycle overlap configuration and IAA measurement
 - [Export Pipeline](annotation-export-pipeline.md) — post-submission constraint validation
 - [Annotation Protocol](../methodology/annotation-protocol.md) — Label definitions and logical constraints
-- [Annotation UI Presentation](annotation-presentation.md) — Joint labelling and visibility contract rationale
+- [Annotation Interface](annotation-interface.md) — Joint labelling, visibility contract, and question wording
 - [Decision 0008: Authentication](../decisions/0008-annotation-interface-auth.md) — Role-based access control
 - [Decision 0009: Schema Configurability](../decisions/0009-annotation-schema-configurability.md) — Hardcoded schema rationale
 - [Decision 0010: Multi-Dataset Architecture](../decisions/0010-annotation-multi-dataset-architecture.md) — rationale for three datasets vs. unified schema

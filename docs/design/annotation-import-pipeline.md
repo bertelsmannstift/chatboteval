@@ -5,7 +5,7 @@ Data pipeline to load captured chatbot query-response data into Argilla annotati
 ## Responsibilities
 
 **In scope:**
-- Accept canonical import records
+- Accept canonical import records (JSON)
 - Transform to Argilla record schema
 - Load into stratified datasets by annotation task (see [Annotation Protocol](../methodology/annotation-protocol.md))
 - Validate records before import
@@ -19,30 +19,28 @@ Data pipeline to load captured chatbot query-response data into Argilla annotati
 
 ## Architecture
 
->NB: exact api/command names pending (e.g. `chatboteval import` stage tbc)
-
 ```
 
 ┌ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ - - - ─ ┐
   External (out of scope)
 │ ┌──────────────────────────────────┐                          |
-  │  Source RAG System Output        │                          
+  │  Source RAG System Output        │
 │ └──────────────┬───────────────────┘                          │
                  │ query, answer, retrieved chunks, prompt context
 │                ▼                                              │
   ┌──────────────────────────────────┐
 │ │  Source Adapter (system specific)│                          |
-  └──────────────┬───────────────────┘                           
+  └──────────────┬───────────────────┘
 └ ─ ─ ─ ─ ─ ─ ─ - ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ - - - ┘
-                 │ (as ChatBotEval canonical import record/schema)
+                 │ JSON (canonical import schema)
                  ▼
 -──────────────────────────────────-──────────────────────────────
-   Import Pipeline begins:                   
+   Import Pipeline begins:
 -──────────────────────────────────-──────────────────────────────
 
-┌────────────────────────────────┐
-│  chatboteval import <file>     │
-└────────────┬───────────────────┘
+┌──────────────────────────────────────┐
+│  chatboteval annotation import <file>│
+└────────────┬─────────────────────────┘
              │
              ▼
 ┌──────────────────────────┐
@@ -60,11 +58,9 @@ Data pipeline to load captured chatbot query-response data into Argilla annotati
             │ (workspace & task distribution → annotators label via Argilla Web UI)
             ▼
 ```
->TODO - exact API / CLI wrapper wording below are TBC, update when decided.
+**Entry point:** `chatboteval annotation import <file>` — accepts a JSON file conforming to the canonical import schema. JSON because the canonical record contains nested structures (chunk lists with sub-fields) that don't map cleanly to flat CSV rows.
 
-**Entry point:** CLI command (e.g., `chatboteval import <file>`)
-
-**Single direction:** File → Argilla (no sync, no bidirectional updates)
+**Single direction:** JSON → Argilla (no sync, no bidirectional updates)
 
 **Fan-out:** One canonical record produces records in all three datasets. Task 1 produces K records per input (one per chunk); Tasks 2 and 3 produce one record each.
 
@@ -74,7 +70,7 @@ The import pipeline operates exclusively against a canonical import schema. Sour
 
 ### Canonical record
 
->TODO: a separate PR will add an independent `schema/` layer (add ref when done), this pydantic model will be the SSOT.
+>TODO: a separate PR with designs for overall package structure will add an independent `schema/` layer (add ref when done), this pydantic model will be the SSOT.
 
 One record per RAG query-response cycle:
 
@@ -116,7 +112,7 @@ Three Argilla datasets, each receiving records from every import:
 **Fields (shown to annotators):**
 - `query` ← canonical `query`
 - `chunk` ← canonical `chunks[k].text`
-- `answer` ← canonical `answer` (supporting context — positioned last per [Annotation UI Presentation](annotation-presentation.md))
+- `answer` ← canonical `answer` (supporting context — positioned last per [Annotation Interface §Visibility contract](annotation-interface.md))
 
 **Metadata (stored, not shown):**
 - `record_uuid` — assigned at import; links same query across all three datasets

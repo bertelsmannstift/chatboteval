@@ -18,7 +18,6 @@ Argilla user account provisioning and credential management for the annotation p
 
 Argilla v2 does not support self-registration. Accounts must be created by the Owner (see [ADR-0008](../decisions/0008-annotation-interface-auth.md)) via the Argilla Python SDK or CLI. Distribute initial passwords via secure channel; users should change on first login.
 
-Full step-by-step provisioning commands: see corresponding GitHub Issue.
 
 ## API Key Management
 

@@ -69,4 +69,4 @@ Rejected: same problem — Argilla schemas are static. You cannot route Task 1 a
 - [Export Pipeline](../design/annotation-export-pipeline.md) — per-dataset CSV export and merged view
 - [Export Pipeline](../design/annotation-export-pipeline.md) — export schema and pipeline per task
 - [Annotation Protocol](../methodology/annotation-protocol.md) — task definitions and record units
-- [Annotation UI Presentation](../design/annotation-presentation.md) — question wording and UI visibility contract
+- [Annotation Interface](../design/annotation-interface.md) — question wording and UI visibility contract

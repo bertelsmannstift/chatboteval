@@ -15,8 +15,7 @@ Design documents focus on (this is guidance, not a required section template):
 
 ## Index
 
-- [Annotation Interface](annotation-interface.md) — Human annotation workflow and Argilla integration
-- [Annotation UI Presentation](annotation-presentation.md) — UI presentation model, field visibility, and question wording
+- [Annotation Interface](annotation-interface.md) — Annotation workflow, Argilla integration, UI presentation model, and question wording
 - [Annotation Export Pipeline](annotation-export-pipeline.md) — Export architecture, schema, merged view, constraint validation
 - [Annotation Import Pipeline](annotation-import-pipeline.md) — Import pipeline, source adapter, canonical record schema
 - [Annotation Workspace & Task Distribution](annotation-workspace-task-distribution.md) — Workspace structure, dataset mapping, task distribution
