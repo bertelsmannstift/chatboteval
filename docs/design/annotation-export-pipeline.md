@@ -22,15 +22,15 @@ Data pipeline to export completed annotations from Argilla recoords to structure
 Argilla PostgreSQL
         │
         ├── task1_retrieval ──────────────────────────────► retrieval.csv
-        │   (retrieval_grounding workspace)                    (query, chunk, chunk_id,
+        │   (workspace_a)                    (query, chunk, chunk_id,
         │                                                    chunk_rank, labels...)
         │
         ├── task2_grounding ──────────────────────────────► grounding.csv
-        │   (retrieval_grounding workspace)                    (query, answer,
+        │   (workspace_a)                    (query, answer,
         │                                                    context_set, labels...)
         │
         └── task3_generation ─────────────────────────────► generation.csv
-            (generation workspace)                      (query, answer, labels...)
+            (workspace_b)                      (query, answer, labels...)
                     │
                     │  
                     ▼
@@ -38,28 +38,26 @@ Argilla PostgreSQL
            ─ Task 1 aggregated per query before join
            ─ NULLs for missing cross-task annotations
 ```
->TODO - exact API / CLI wrapper wording below are TBC, update when decided.
+>**Pending** - exact API / CLI wrapper wording below are TBC, TODO update when decided.
 
 **Entry point:** `chatboteval export <output_dir>` (CLI) or `chatboteval.export(...)` (Python API)
 
 ## Inputs
 
-Three Argilla datasets, accessed via Argilla SDK. Filter: `status == "submitted"` only (exclude draft, discarded). 
+Three Argilla dataset, accessed via Argilla SDK. Filter: `status == "submitted"` only (exclude draft, discarded). 
 
-> NB: Workspace names and task assignment are deployment configuration, not fixed architecture; current defaults  reflect one possible annotator stratification (see [Workspace & Task Distribution](annotation-workspace-task-distribution.md)).
 
-| Dataset | Workspace | Records |
-|---------|-----------|---------|
-| `task1_retrieval` | `retrieval_grounding` | One record per query–chunk pair |
-| `task2_grounding` | `retrieval_grounding` | One record per query–answer pair |
-| `task3_generation` | `generation` | One record per query–answer pair |
+| Dataset | Records |
+|---------|---------|
+| `task1_retrieval` | One record per query–chunk pair |
+| `task2_grounding` | One record per query–answer pair |
+| `task3_generation` | One record per query–answer pair |
+
+> NB: Workspace setup and associated task assignment are deployment configuration, not fixed architecture (see [Workspace & Task Distribution](annotation-workspace-task-distribution.md)).
 
 ## Export Format & Schema
 
 > **Depends on:** [Annotation Protocol](../methodology/annotation-protocol.md) for label definitions
-
-
->**TODO**: a separate PR will add an independent `schema/` layer (add ref when done), this pydantic model will be the SSOT.
 
 Export as human-readable CSV, flat format, one row per annotator response vector. Three task-specific CSVs with disjoint label columns and shared metadata.
 
@@ -67,7 +65,9 @@ Export as human-readable CSV, flat format, one row per annotator response vector
 >
 > **Alternative rejected: Nested JSON (one object per record with annotation array)** — Harder to compute inter-annotator agreement; requires unpacking before analysis.
 
-> Export schemas define what downstream pipelines need. They are not a mirror of what annotators see in the annotation interface (field naming and structure may differ).
+Export schemas define what downstream pipelines need. They are not a mirror of what annotators see in the annotation interface (field naming and structure may differ).
+
+>**TODO**: a separate PR will add an independent `schema/` layer (add cross-ref when done), this pydantic model will be the SSOT. Below is initial proposal:
 
 ### Shared metadata columns (all tasks)
 
@@ -77,10 +77,9 @@ Export as human-readable CSV, flat format, one row per annotator response vector
 | `annotator_id` | string | Annotator username |
 | `task` | string | Task identifier: `retrieval`, `grounding`, or `generation` |
 | `language` | string | Language code (e.g. `de`, `en`) |
-| `inserted_at` | datetime | When the record was loaded into Argilla, tracks batch provenance, distinct from submission time |
+| `inserted_at` | datetime | When the record was loaded into Argilla, tracks batch provenance |
 | `created_at` | datetime | Response submission timestamp |
 | `record_status` | string | Argilla record status: `pending` or `completed` (whether the record met its `TaskDistribution` overlap target) |
-
 
 **Not exported:**
 - `response_status` — we filter to `submitted` only; column would be constant
