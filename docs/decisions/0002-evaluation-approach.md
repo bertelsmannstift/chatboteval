@@ -12,23 +12,23 @@ The following architectural constraints apply:
 - **Reference-based evaluation only**
   - Evaluation requires a human-annotated dataset.
   - Automated scoring is performed by fine-tuning and applying cross-encoder transformer models for multilabel classification.
-  - Out of scope: LLM-as-judge, zero-shot evaluators, and other reference-free scoring approaches.
+  - Out of scope for v.1.*: LLM-as-judge, zero-shot evaluators, and other reference-free scoring approaches.
 - **Offline batch evaluation**
   - The framework evaluates captured examples, retrospectively, in batch.
   - Out of scope: Real-time chatbot integration
 - **Failure-mode decomposition**
   - Evaluation is decomposed into retrieval, grounding, and generation
 - **Pipeline delegation**
-  - Training and inference are executed via `tlmtc` as the canonical transfer-learning pipeline.
+  - Training and inference are executed via `tlmtc` (Transfer Learning for Multi-Label Text Classification) as the canonical transfer-learning pipeline.
 
 
 ## Rationale
 
 - **Reference-based evaluation yields reproducible, auditable, and reliable scores** 
-  - LLM-as-judge / zero-shot approaches are prompt- and model/version–sensitive, inherently non-deterministic, impose marginal token costs per example, and are difficult to compare across runs.
+  - LLM-as-judge / zero-shot approaches depend on natural-language prompting and a served model/version, making scoring sensitive to prompt wording and model updates. Because they rely on generative decoding, scoring may vary across runs and incurs marginal per-example generation-token costs. This complicates longitudinal comparability unless the exact prompt, model version, and decoding configuration are strictly controlled.
   - Human-annotated labels provide an explicit ground truth for auditability and for validating the evaluator as a measurement instrument.
   - Supervised evaluators amortize cost into efficient fine-tuning and enable fast, cheap batch inference for repeatable runs at scale.
-  - Cross-encoders model a relational evaluator over RAG structure that learns compatibility/entailment patterns between query, context, and answer—signals intrinsic to RAG evaluation tasks and therefore more portable across datasets.
+  - Cross-encoders learn relational scoring functions over (query, retrieved context, answer)—e.g., relevance and entailment/contradiction patterns. These signals often transfer within a domain and across closely related datasets, enabling consistent scoring of system variants (chunking/retrieval/reranking) without changing the evaluator. Significant domain shift may require incremental re-annotation and fine-tuning, which we treat as a controlled update to the pinned evaluator.
   - Multilabel classification matches the construct: within each metric family, evaluation dimensions can co-occur and be logically interdependent.
 - **Offline batch evaluation supports reproducibility and keeps the system simple**
   - Human annotation is inherently asynchronous and produces labeled datasets in discrete snapshots rather than streams.
@@ -47,5 +47,6 @@ The following architectural constraints apply:
 
 - Evaluation requires an annotation workflow and a labeled dataset snapshot; the framework cannot operate in a reference-free mode.
 - The scoring backend is constrained to supervised cross-encoder multilabel classification; metric computation assumes model outputs are aligned with the annotation protocol.
+- Evaluator generalization is empirical. When applying the evaluator to substantially new domains, corpora, or query distributions, a labeled validation slice must be collected to assess performance. If degradation is observed, additional annotation and re-training are required.
 - The annotation protocol must be multilabel-compatible (non–mutually-exclusive binary dimensions); continuous or ranking-style judgments are out of scope.
 - `tlmtc` owns: data splitting and pre-processing, HPO, fine-tuning, inference, and model validation
