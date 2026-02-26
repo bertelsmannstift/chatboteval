@@ -19,7 +19,7 @@ Scaffolds the contract layer for `chatboteval` — a set of canonical types, sch
 
 Core data structures shared across all pipeline stages. Defined as Pydantic models in `src/chatboteval/core/types.py`.
 
->= in-memory Python objects: what code passes around
+>= in-memory Python objects
 
 **Unit of annotation:**
 
@@ -161,7 +161,7 @@ class Task(StrEnum):
 
 ## 2. Data Schemas
 
->= on-disk serialisation (flat) formats for data exchanged between pipeline stages; string types - what file reader/writers expects
+>= on-disk serialisation (flat) formats for data exchanged between pipeline stages; what file reader/writers expects; string types
 
 CSV for all interchange. The domain types in Section 1 are SSOT for field names and semantics —> each CSV schema is a flat serialisation of the corresponding Pydantic model.
 
@@ -176,7 +176,7 @@ Flat serialisation of `QueryResponsePair`, plus an `id` and `source` column:
 | `id` | str | Unique identifier for the QR pair (not on the domain type) |
 | `query` | str | |
 | `response` | str | |
-| `context` | str (JSON array) | `context_set: list[str]` serialised as JSON array |
+| `context_set` | str (JSON array) | `list[str]` serialised as JSON array |
 | `source` | str | `source_id` on the domain type |
 
 ### Annotation export format
@@ -203,30 +203,31 @@ Flat serialisation of `ExamplePrediction`. One row per example per task. `predic
 
 Flat serialisation of `MetricResult`. One row per metric. All fields map 1:1, no serialisation differences.
 
-> **Decision:** CSV for all data exchange, including RAG input. The `context` column contains a JSON-serialised array (`["chunk1", "chunk2"]`). This keeps one format everywhere; the context column is machine-consumed so readability is not a concern.
->
-> **To design:** Schema versioning strategy — embed `schema_version` column or use file-level metadata?
+> CSV for all data exchange, including RAG input(?). The `context_set` column contains a JSON-serialised array (`["chunk1", "chunk2"]`). This keeps one format everywhere; the column is machine-consumed so readability is not a concern.
+
+> No per-file schema versioning. Schema version is implicit from the package version (if contract types change -> package version bumps). The only place an explicit version check matters is model–dataset compatibility, which `ModelArtifact.schema_version` already handles. Pydantic validation at load time is the version mismatch signal for CSV files.
 
 
 ---
 
 ## 3. File Path Conventions
 
-Canonical locations for all data artefacts. Defined as constants or a `Paths` config object in `src/chatboteval/core/paths.py`.
+Canonical locations for data artefacts produced and consumed by the pipeline (not source code layout, see [ADR-0007](../decisions/0007-packaging-invocation-surface.md) for package structure).
 
 ```
 <project_root>/
-  data/
+  data/                 # datasets (versionable, shareable)
     input/              # raw RAG output to annotate or evaluate
     generated/          # synthetic test set from `chatboteval generate`
     annotated/          # annotation exports from `chatboteval annotation export`
-  models/
-    auto_labeller/      # trained auto-labeller artifacts (one subdir per run)
-  outputs/
+  models/               # trained model artifacts managed by chatboteval
+    auto_labeller/      # multilabel text classifier (one subdir per run)
+                        # extensible
+  outputs/              # computed results (reproducible from data + model)
     eval/               # evaluation results from `chatboteval eval`
 
 ~/.chatboteval/
-  config.yaml           # global user config (Argilla credentials, model paths, output dirs)
+  config.yaml           # user config (Argilla credentials, model paths, output dirs)
 
 ./apps/
   annotation/
@@ -234,8 +235,9 @@ Canonical locations for all data artefacts. Defined as constants or a `Paths` co
     .env
 ```
 
-> **To design:** Should paths be hardcoded conventions or configurable per-project? If configurable, where does the path config live (project config vs env vars vs `chatboteval.toml`)? How are multiple concurrent runs identified (timestamped subdirs, run IDs)?
+These paths are exposed as module-level `Path` constants in `src/chatboteval/core/paths.py` — one constant per directory above (e.g. `DATA_INPUT`, `DATA_ANNOTATED`, `MODELS_AUTO_LABELLER`, `OUTPUTS_EVAL`). All path resolution relative to project root happens in this module; consuming code imports the constants rather than constructing paths.
 
+> Directory structure is fixed by convention (no configuration).Only override is output.base_dir in config, which can change where outputs are written.
 
 ---
 
@@ -264,9 +266,15 @@ CHATBOTEVAL_* env vars
 built-in defaults
 ```
 
-> **Decision:** Global config only at `~/.chatboteval/config.yaml` for v1.0. Follows the dbt/AWS CLI pattern — appropriate for a tool with credentials. Project-level config (`chatboteval.toml` or `pyproject.toml [tool.chatboteval]`) is a natural extension if multi-project support is needed later.
->
-> **To design:** Task-specific config (annotation task types, stratification rules) — part of core config or separate?
+> Global config only at `~/.chatboteval/config.yaml` for v1.0. Follows the dbt/AWS CLI pattern, appropriate for tool with credentials.
+
+> **NB:** Task-specific configuration (active tasks, stratification rules, distribution overlap targets) is not runtime config, instead it's applied at dataset creation time during `chatboteval annotation import`. 
+> - `Task` enum defines the fixed set of tasks (see above)
+> - Argilla dataset settings (workspace assignment, `TaskDistribution` overlap) are configured via the import pipeline when datasets are created(see [Workspace & Task Distribution](annotation-workspace-task-distribution.md) and [Import Pipeline](annotation-import-pipeline.md))
+>   1. Create Argilla datasets once (oon first import)
+>   2. Task distribution, workspace assignment, overlap targets are baked into the datasets at creation
+>   3. Subsequent imports add records to existing datasets (no reconfiguration)
+> Only alternative would be to move these dataset configs to `chatboteval init` -> `~/.chatboteval/config.yaml` - over engineering?
 
 
 ---
@@ -276,31 +284,19 @@ built-in defaults
 Canonical on-disk structure of a trained auto-labeller, produced by `tlmtc` and consumed by `chatboteval eval`.
 
 ```
-models/auto_labeller/<run-id>/
+models/auto_labeller/<run-id>/          # run-id = ISO timestamp, e.g. 2025-03-15T14-30-00
   model/                  # HuggingFace-compatible model weights and tokeniser
-  metadata.json           # schema_version, task_type, training dataset hash,
-                          # eval metrics at training time, training timestamp
+  metadata.json           # Pydantic-serialised ModelArtifact (see Section 1)
   schema.json             # input column contract this model expects
 ```
 
 The `metadata.json` must be sufficient to determine whether a model artifact is compatible with a given dataset (schema version match) without loading the model weights.
 
-> **To design:** Run ID format (timestamp vs UUID vs semantic label). Whether `metadata.json` is a Pydantic-serialised `ModelArtifact` or a looser JSON envelope. Versioning strategy if the contract schema changes after a model is trained.
-
-
----
-
-## 6. Interface Contracts (Protocols)
-
-The contract layer is the natural home for `Protocol` definitions that pluggable components implement against. Candidates:
-
-- **DataLoader** — read input data from a source system into `QueryResponsePair`s
-- **EvalBridge** — interface to `tlmtc` for inference and metric aggregation
-
-These keep `core/` submodules programming to shared interfaces, not just shared types. Defer until implementation surfaces the need — add only when there are 2+ concrete implementations of the same boundary.
-
-> **To design:** Which boundaries are genuinely pluggable vs single-implementation. Whether protocols live in `core/types.py` or a separate `core/protocols.py`.
-
+> **run-id:** ISO timestamp (`YYYY-MM-DDTHH-MM-SS`). Sortable, human-readable.
+>
+> **Metadata format:** `metadata.json` is a direct Pydantic serialisation of `ModelArtifact` — written with `model_dump_json()`, read with `model_validate_json()`. Consistent with the rest of the contract layer (Pydantic as SSOT).
+>
+> **Schema version mismatch:** At eval time, compare `ModelArtifact.schema_version` against current package version. Mismatch -> fail with clear error. No migration, no backwards compatibility (need to retrain). 
 
 ---
 
