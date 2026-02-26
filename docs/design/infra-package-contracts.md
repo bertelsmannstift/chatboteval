@@ -2,7 +2,15 @@
 
 ## Purpose
 
-Scaffolds the contract layer defined in [ADR-0005](../decisions/0005-infra-package-contracts.md). Each section below is a stub — the authoritative definition to be developed during implementation. Together they form the shared vocabulary and structural conventions for the whole package.
+Scaffolds the contract layer for `chatboteval` — a set of canonical types, schemas, path conventions, and config structures that all internal modules depend on. Each section below is a stub — the authoritative definition to be developed during implementation. Together they form the shared vocabulary and structural conventions for the whole package.
+
+## Key decisions
+
+- **Pydantic** for all contract definitions (domain types, data schemas, config via Pydantic Settings). Validates structure at module boundaries; Pydantic becomes a core dependency.
+- **Dependency direction:** `core/ ← api/ ← cli/` (per [ADR-0007](../decisions/0007-packaging-invocation-surface.md)). Contract definitions in `core/` have zero internal imports — they are the bottom of the dependency graph.
+- **All inter-module data exchange** uses contract types, not raw dicts. Schema changes are breaking changes.
+- **No business logic** in the contract layer — types and schemas only.
+- **Public API surface:** `api/` re-exports contract types directly. Users get typed interfaces without knowing internal structure.
 
 
 ---
@@ -17,31 +25,81 @@ Core data structures shared across all pipeline stages. Defined as Pydantic mode
 QueryResponsePair
   query: str
   response: str
-  context_set: list[str]       # retrieved chunks used to generate response
+  context_set: list[str]       # one entry per retrieved chunk; serialised as JSON array in CSV, concatenated with [CTX_SEP] in annotation exports
   source_id: str               # opaque identifier from source system
   metadata: dict               # pass-through from source (timestamps, model id, etc.)
 ```
 
-**Annotation:**
+**Annotations** — task-specific types matching the [export schema](annotation-export-schema.md). Each task has a different annotation unit and label set:
 
 ```
-Annotation
-  pair_id: str
-  task_type: "retrieval" | "grounding" | "relevance"
-  label: bool                  # binary: acceptable / not acceptable
+RetrievalAnnotation                        # unit: (query, chunk)
+  record_uuid: str
+  input_query: str
+  chunk: str
+  chunk_id: str
+  doc_id: str
+  chunk_rank: int
+  topically_relevant: bool
+  evidence_sufficient: bool
+  misleading: bool
+  notes: str | None
   annotator_id: str
-  timestamp: datetime
+  language: str
+  created_at: datetime
 ```
 
-**Evaluation output:**
+```
+GroundingAnnotation                        # unit: (answer, context_set)
+  record_uuid: str
+  answer: str
+  context_set: str                         # concatenated with [CTX_SEP]
+  support_present: bool
+  unsupported_claim_present: bool
+  contradicted_claim_present: bool
+  source_cited: bool
+  fabricated_source: bool
+  notes: str | None
+  annotator_id: str
+  language: str
+  created_at: datetime
+```
 
 ```
-EvalResult
-  pair_id: str
-  metric_family: "retrieval" | "grounding" | "relevance"
-  score: float                 # 0.0–1.0
-  method: "reference_based" | "reference_free" | "model_based"
-  metadata: dict               # model id, prompt version, etc.
+GenerationAnnotation                       # unit: (query, answer)
+  record_uuid: str
+  query: str
+  answer: str
+  proper_action: bool
+  response_on_topic: bool
+  helpful: bool
+  incomplete: bool
+  unsafe_content: bool
+  notes: str | None
+  annotator_id: str
+  language: str
+  created_at: datetime
+```
+
+**Per-example predictions** (from `tlmtc` inference) — multilabel classification output, one prediction per example:
+
+> **NB:** `ExamplePrediction` is speculative / tbc, actual format depends on `tlmtc`'s output interface, which hasn't been inspected yet. Revise later.
+
+```
+ExamplePrediction                          # per-example multilabel output from tlmtc
+  record_uuid: str
+  task: "retrieval" | "grounding" | "generation"
+  predicted_labels: dict[str, bool]        # e.g. {"topically_relevant": true, "evidence_sufficient": false}
+```
+
+**Aggregated metrics** (computed by `chatboteval`) — deterministic aggregation using formulas from the [Metrics Taxonomy](../methodology/metrics-taxonomy.md). Input labels come from (i) human annotations initially, and (ii) fine-tuned evaluator model predictions (`ExamplePrediction`) once trained. See [ADR-0002](../decisions/0002-evaluation-approach.md) for evaluation approach.
+
+```
+MetricResult                               # aggregated by chatboteval from ExamplePredictions
+  metric_name: str                         # e.g. "TopicalPrecision@K", "GroundingPresenceRate"
+  metric_family: "retrieval" | "grounding" | "generation"
+  value: float                             # 0.0–1.0
+  dataset_size: int                        # number of examples aggregated over
 ```
 
 **Trained model artifact reference:**
@@ -49,12 +107,44 @@ EvalResult
 ```
 ModelArtifact
   path: Path                   # local path to artifact directory
-  task_type: str
+  task: "retrieval" | "grounding" | "generation"
   schema_version: str          # contract version this model was trained against
   training_metadata: dict      # dataset size, metrics at training time, etc.
 ```
 
-> **To design:** AnnotatedPair (pair + its annotations), BatchEvalReport (aggregated EvalResults for a batch). Decide whether domain types are immutable (frozen Pydantic) or mutable. Controlled vocabularies (`task_type`, `method`, `metric_family`) should be `StrEnum`s in `core/types.py` rather than repeated string literals — prevents drift across modules and enables autocomplete/validation in one place.
+### Design decisions
+
+**1. Base class for annotation types** → `AnnotationBase` with shared metadata fields; task types inherit and add task-specific labels. 5 shared fields across 3 types is enough duplication to warrant one level of inheritance. Shared validation lives in one place.
+
+```python
+class AnnotationBase(BaseModel, frozen=True):
+    record_uuid: str
+    annotator_id: str
+    language: str
+    created_at: datetime
+    notes: str | None
+
+class RetrievalAnnotation(AnnotationBase):
+    input_query: str
+    chunk: str
+    chunk_id: str
+    doc_id: str
+    chunk_rank: int
+    topically_relevant: bool
+    evidence_sufficient: bool
+    misleading: bool
+```
+
+**2. Frozen domain types** → all domain types use `frozen=True`. These are data records, not builders — all fields are known at construction time (from CSV rows or Argilla exports). Frozen types are safer (no accidental mutation mid-pipeline), hashable (usable in sets/dicts for deduplication), and enforce data integrity.
+
+**3. StrEnums for controlled vocabularies** → `task`, `metric_family`, and `metric_name` defined as `StrEnum`s in `core/types.py`. The vocabulary (`retrieval`/`grounding`/`generation`) is stable across all docs. Catches typos at import time, enables IDE autocomplete, and centralises renaming.
+
+```python
+class Task(StrEnum):
+    RETRIEVAL = "retrieval"
+    GROUNDING = "grounding"
+    GENERATION = "generation"
+```
 
 
 ---
@@ -73,26 +163,26 @@ Column-level contracts for CSV/JSONL data exchanged between pipeline stages. Def
 | `context` | str (JSON array) | Retrieved context chunks, serialised |
 | `source` | str | Source system identifier |
 
-**Annotation export format** — output of `annotation export`, input to `train` and `eval`:
+**Annotation export format** — three task-specific CSVs, one per task. See [Annotation Export Schema](annotation-export-schema.md) for full column definitions. Each CSV has shared metadata columns (`record_uuid`, `annotator_id`, `task`, `language`, `created_at`) plus task-specific label and content columns.
+
+**Per-example predictions** (from `tlmtc` inference, one row per example per task). Schema is speculative — depends on `tlmtc` output format:
 
 | Column | Type | Description |
 |---|---|---|
-| `id` | str | QR pair identifier |
-| `task_type` | str | `retrieval` / `grounding` / `relevance` |
-| `label` | bool | Binary annotation |
-| `annotator_id` | str | Argilla user identifier |
-| `annotated_at` | datetime | Timestamp |
+| `record_uuid` | str | Cross-dataset record identifier |
+| `task` | str | `retrieval` / `grounding` / `generation` |
+| `<label_name>` | bool | One column per predicted label (task-specific) |
 
-**Evaluation output format** — output of `eval`:
+**Aggregated metrics** (computed by `chatboteval`, one row per metric):
 
 | Column | Type | Description |
 |---|---|---|
-| `id` | str | QR pair identifier |
-| `metric_family` | str | Metric family |
-| `score` | float | 0.0–1.0 |
-| `method` | str | Evaluation method used |
+| `metric_name` | str | e.g. `TopicalPrecision@K`, `GroundingPresenceRate` |
+| `metric_family` | str | `retrieval` / `grounding` / `generation` |
+| `value` | float | 0.0–1.0 |
+| `dataset_size` | int | Number of examples aggregated over |
 
-> **Decision:** CSV for all data exchange, including RAG input. The `context` column contains a JSON-serialised array (`["chunk1", "chunk2"]`). This keeps one format everywhere and aligns with ADR-0005; the context column is machine-consumed so readability is not a concern.
+> **Decision:** CSV for all data exchange, including RAG input. The `context` column contains a JSON-serialised array (`["chunk1", "chunk2"]`). This keeps one format everywhere; the context column is machine-consumed so readability is not a concern.
 >
 > **To design:** Schema versioning strategy — embed `schema_version` column or use file-level metadata?
 
@@ -115,7 +205,7 @@ Canonical locations for all data artefacts. Defined as constants or a `Paths` co
     eval/               # evaluation results from `chatboteval eval`
 
 ~/.chatboteval/
-  config.yaml           # project config (Argilla URL, model paths, output dirs)
+  config.yaml           # global user config (Argilla credentials, model paths, output dirs)
 
 ./apps/
   annotation/
@@ -138,9 +228,8 @@ argilla:
   url: http://localhost:6900
   api_key: owner.apikey
 
-model:
-  deployment: mistral      # model used for reference-free eval (LLM-as-judge)
-  # local_path: ...        # if using a locally-hosted model
+tlmtc:
+  model_dir: ./models/auto_labeller   # path to trained evaluator artifacts
 
 output:
   base_dir: ./outputs      # override default output path
@@ -163,7 +252,7 @@ built-in defaults
 
 ## 5. Model Spec (Eval Artifact)
 
-Canonical on-disk structure of a trained auto-labeller, produced by `chatboteval train` and consumed by `chatboteval eval --model`.
+Canonical on-disk structure of a trained auto-labeller, produced by `tlmtc` and consumed by `chatboteval eval`.
 
 ```
 models/auto_labeller/<run-id>/
@@ -185,7 +274,7 @@ The `metadata.json` must be sufficient to determine whether a model artifact is 
 The contract layer is the natural home for `Protocol` definitions that pluggable components implement against. Candidates:
 
 - **DataLoader** — read input data from a source system into `QueryResponsePair`s
-- **Evaluator** — score a batch of pairs against a metric family
+- **EvalBridge** — interface to `tlmtc` for inference and metric aggregation
 
 These keep `core/` submodules programming to shared interfaces, not just shared types. Defer until implementation surfaces the need — add only when there are 2+ concrete implementations of the same boundary.
 
@@ -196,5 +285,4 @@ These keep `core/` submodules programming to shared interfaces, not just shared 
 
 ## References
 
-- [ADR-0005: Package Contract Layer](../decisions/0005-infra-package-contracts.md) — rationale and dependency rules
 - [ADR-0007: Packaging and Invocation Surface](../decisions/0007-packaging-invocation-surface.md) — module dependency direction
