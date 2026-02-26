@@ -19,6 +19,8 @@ Scaffolds the contract layer for `chatboteval` — a set of canonical types, sch
 
 Core data structures shared across all pipeline stages. Defined as Pydantic models in `src/chatboteval/core/types.py`.
 
+>= in-memory Python objects: what code passes around
+
 **Unit of annotation:**
 
 ```
@@ -46,7 +48,9 @@ RetrievalAnnotation                        # unit: (query, chunk)
   notes: str | None
   annotator_id: str
   language: str
+  inserted_at: datetime
   created_at: datetime
+  record_status: str
 ```
 
 ```
@@ -62,7 +66,9 @@ GroundingAnnotation                        # unit: (answer, context_set)
   notes: str | None
   annotator_id: str
   language: str
+  inserted_at: datetime
   created_at: datetime
+  record_status: str
 ```
 
 ```
@@ -78,7 +84,9 @@ GenerationAnnotation                       # unit: (query, answer)
   notes: str | None
   annotator_id: str
   language: str
+  inserted_at: datetime
   created_at: datetime
+  record_status: str
 ```
 
 **Per-example predictions** (from `tlmtc` inference) — multilabel classification output, one prediction per example:
@@ -114,14 +122,16 @@ ModelArtifact
 
 ### Design decisions
 
-**1. Base class for annotation types** → `AnnotationBase` with shared metadata fields; task types inherit and add task-specific labels. 5 shared fields across 3 types is enough duplication to warrant one level of inheritance. Shared validation lives in one place.
+**1. Base class for annotation types** → `AnnotationBase` with shared metadata fields; task types inherit and add task-specific labels. 7 shared fields across 3 types is enough duplication to warrant one level of inheritance. Shared validation lives in one place.
 
 ```python
 class AnnotationBase(BaseModel, frozen=True):
     record_uuid: str
     annotator_id: str
     language: str
-    created_at: datetime
+    inserted_at: datetime            # when record was loaded into Argilla (batch provenance)
+    created_at: datetime             # response submission timestamp
+    record_status: str               # Argilla record status: pending | completed
     notes: str | None
 
 class RetrievalAnnotation(AnnotationBase):
@@ -135,7 +145,7 @@ class RetrievalAnnotation(AnnotationBase):
     misleading: bool
 ```
 
-**2. Frozen domain types** → all domain types use `frozen=True`. These are data records, not builders — all fields are known at construction time (from CSV rows or Argilla exports). Frozen types are safer (no accidental mutation mid-pipeline), hashable (usable in sets/dicts for deduplication), and enforce data integrity.
+**2. Frozen domain types** → all domain types use `frozen=True`. These are data records -> all fields known at construction time (from CSV rows or Argilla exports). Frozen types are safer (no accidental mutation mid-pipeline), hashable (usable in sets/dicts for deduplication), and enforce data integrity.
 
 **3. StrEnums for controlled vocabularies** → `task`, `metric_family`, and `metric_name` defined as `StrEnum`s in `core/types.py`. The vocabulary (`retrieval`/`grounding`/`generation`) is stable across all docs. Catches typos at import time, enables IDE autocomplete, and centralises renaming.
 
@@ -151,36 +161,47 @@ class Task(StrEnum):
 
 ## 2. Data Schemas
 
-Column-level contracts for CSV/JSONL data exchanged between pipeline stages. Defined as Pydantic models in `src/chatboteval/core/schema/` (validation at system boundaries).
+>= on-disk serialisation (flat) formats for data exchanged between pipeline stages; string types - what file reader/writers expects
 
-**RAG input format** — input to `generate` and `annotation import`:
+CSV for all interchange. The domain types in Section 1 are SSOT for field names and semantics —> each CSV schema is a flat serialisation of the corresponding Pydantic model.
 
-| Column | Type | Description |
+This section documents only the file-level structure and serialisation rules that differ from the in-memory representation.
+
+### RAG input format — input to `generate` and `annotation import`
+
+Flat serialisation of `QueryResponsePair`, plus an `id` and `source` column:
+
+| Column | Type | Notes |
 |---|---|---|
-| `id` | str | Unique identifier for the QR pair |
-| `query` | str | User query |
-| `response` | str | RAG system response |
-| `context` | str (JSON array) | Retrieved context chunks, serialised |
-| `source` | str | Source system identifier |
+| `id` | str | Unique identifier for the QR pair (not on the domain type) |
+| `query` | str | |
+| `response` | str | |
+| `context` | str (JSON array) | `context_set: list[str]` serialised as JSON array |
+| `source` | str | `source_id` on the domain type |
 
-**Annotation export format** — three task-specific CSVs, one per task. See [Annotation Export Schema](annotation-export-schema.md) for full column definitions. Each CSV has shared metadata columns (`record_uuid`, `annotator_id`, `task`, `language`, `created_at`) plus task-specific label and content columns.
+### Annotation export format
 
-**Per-example predictions** (from `tlmtc` inference, one row per example per task). Schema is speculative — depends on `tlmtc` output format:
+Three task-specific CSVs, one per task. Each CSV contains the flat serialisation of the corresponding annotation type (`RetrievalAnnotation`, `GroundingAnnotation`, `GenerationAnnotation`) — all fields from `AnnotationBase` plus task-specific fields. See [Annotation Export Schema](annotation-export-schema.md) for full column definitions.
 
-| Column | Type | Description |
+Serialisation differences from the domain types:
+
+| Domain type field | CSV column | Difference |
 |---|---|---|
-| `record_uuid` | str | Cross-dataset record identifier |
-| `task` | str | `retrieval` / `grounding` / `generation` |
-| `<label_name>` | bool | One column per predicted label (task-specific) |
+| `Task` enum | `task` (str) | Enum serialised as string value |
+| `context_set: list[str]` | `context_set` (str) | Chunks concatenated with `[CTX_SEP]` separator |
+| `datetime` fields | str | ISO 8601 formatted |
 
-**Aggregated metrics** (computed by `chatboteval`, one row per metric):
+File naming: `retrieval.csv`, `grounding.csv`, `generation.csv`.
 
-| Column | Type | Description |
-|---|---|---|
-| `metric_name` | str | e.g. `TopicalPrecision@K`, `GroundingPresenceRate` |
-| `metric_family` | str | `retrieval` / `grounding` / `generation` |
-| `value` | float | 0.0–1.0 |
-| `dataset_size` | int | Number of examples aggregated over |
+### Per-example predictions
+
+Flat serialisation of `ExamplePrediction`. One row per example per task. `predicted_labels: dict[str, bool]` is unpacked into one boolean column per label (task-specific column names).
+
+> Schema is speculative — depends on `tlmtc` output format.
+
+### Aggregated metrics
+
+Flat serialisation of `MetricResult`. One row per metric. All fields map 1:1, no serialisation differences.
 
 > **Decision:** CSV for all data exchange, including RAG input. The `context` column contains a JSON-serialised array (`["chunk1", "chunk2"]`). This keeps one format everywhere; the context column is machine-consumed so readability is not a concern.
 >
