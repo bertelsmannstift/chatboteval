@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Scaffolds the contract layer defined in [ADR-0014](../decisions/0014-infra-package-contracts.md). Each section below is a stub — the authoritative definition to be developed during implementation. Together they form the shared vocabulary and structural conventions for the whole package.
+Scaffolds the contract layer defined in [ADR-0005](../decisions/0005-infra-package-contracts.md). Each section below is a stub — the authoritative definition to be developed during implementation. Together they form the shared vocabulary and structural conventions for the whole package.
 
 
 ---
@@ -54,7 +54,7 @@ ModelArtifact
   training_metadata: dict      # dataset size, metrics at training time, etc.
 ```
 
-> **To design:** AnnotatedPair (pair + its annotations), BatchEvalReport (aggregated EvalResults for a batch). Decide whether domain types are immutable (frozen Pydantic) or mutable.
+> **To design:** AnnotatedPair (pair + its annotations), BatchEvalReport (aggregated EvalResults for a batch). Decide whether domain types are immutable (frozen Pydantic) or mutable. Controlled vocabularies (`task_type`, `method`, `metric_family`) should be `StrEnum`s in `core/types.py` rather than repeated string literals — prevents drift across modules and enables autocomplete/validation in one place.
 
 
 ---
@@ -92,7 +92,9 @@ Column-level contracts for CSV/JSONL data exchanged between pipeline stages. Def
 | `score` | float | 0.0–1.0 |
 | `method` | str | Evaluation method used |
 
-> **To design:** JSONL vs CSV for RAG input (CSV preferred per ADR-0005, but JSONL may be more natural for context arrays). Schema versioning strategy — embed `schema_version` column or use file-level metadata?
+> **Decision:** CSV for all data exchange, including RAG input. The `context` column contains a JSON-serialised array (`["chunk1", "chunk2"]`). This keeps one format everywhere and aligns with ADR-0005; the context column is machine-consumed so readability is not a concern.
+>
+> **To design:** Schema versioning strategy — embed `schema_version` column or use file-level metadata?
 
 
 ---
@@ -152,7 +154,9 @@ CHATBOTEVAL_* env vars
 built-in defaults
 ```
 
-> **To design:** Project-level config vs global user config — should there be a `chatboteval.toml` in the project root (like `pyproject.toml`) separate from the user's `~/.chatboteval/config.yaml`? Task-specific config (annotation task types, stratification rules) — part of core config or separate?
+> **Decision:** Global config only at `~/.chatboteval/config.yaml` for v1.0. Follows the dbt/AWS CLI pattern — appropriate for a tool with credentials. Project-level config (`chatboteval.toml` or `pyproject.toml [tool.chatboteval]`) is a natural extension if multi-project support is needed later.
+>
+> **To design:** Task-specific config (annotation task types, stratification rules) — part of core config or separate?
 
 
 ---
@@ -176,8 +180,21 @@ The `metadata.json` must be sufficient to determine whether a model artifact is 
 
 ---
 
+## 6. Interface Contracts (Protocols)
+
+The contract layer is the natural home for `Protocol` definitions that pluggable components implement against. Candidates:
+
+- **DataLoader** — read input data from a source system into `QueryResponsePair`s
+- **Evaluator** — score a batch of pairs against a metric family
+
+These keep `core/` submodules programming to shared interfaces, not just shared types. Defer until implementation surfaces the need — add only when there are 2+ concrete implementations of the same boundary.
+
+> **To design:** Which boundaries are genuinely pluggable vs single-implementation. Whether protocols live in `core/types.py` or a separate `core/protocols.py`.
+
+
+---
+
 ## References
 
-- [ADR-0014: Package Contract Layer](../decisions/0014-infra-package-contracts.md) — rationale and dependency rules
-- [ADR-0005: Storage Format](../decisions/0005-storage-format.md) — annotation CSV as primary exchange format
+- [ADR-0005: Package Contract Layer](../decisions/0005-infra-package-contracts.md) — rationale and dependency rules
 - [ADR-0007: Packaging and Invocation Surface](../decisions/0007-packaging-invocation-surface.md) — module dependency direction

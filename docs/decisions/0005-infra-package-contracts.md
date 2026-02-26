@@ -1,4 +1,4 @@
-# 0014: Package Contract Layer
+# 0005: Package Contract Layer
 
 Status: Draft
 
@@ -40,5 +40,4 @@ All contracts are defined using **Pydantic** models. Config uses Pydantic Settin
 ## References
 
 - [ADR-0007: Packaging and Invocation Surface](0007-packaging-invocation-surface.md) — dependency direction (`cli → api → core`)
-- [ADR-0005: Storage Format](0005-storage-format.md) — annotation CSV as primary exchange format
 - [Package Contracts Design](../design/infra-package-contracts.md) — detailed scaffold for each contract area
