@@ -5,7 +5,7 @@ Status: Accepted
 
 ## Decision
 
-This project supports generating chatbot evaluation queries when real user queries cannot be collected. 
+This project supports generating chatbot evaluation queries when real user queries cannot be collected, and as a complementary mechanism to probe systematic coverage gaps.
 
 The following architectural constraints apply:
 
@@ -15,7 +15,7 @@ The following architectural constraints apply:
   - Users provide a small structured query-generation spec (constraints + knobs), not free-form prompts.
   - Prompt templates are internal implementation details and are not part of the user-facing surface.
 - **Decouple inputs from outputs via controlled sampling**
-  - The number of generated queries is controlled explicitly not tied 1:1 to the number of provided seed items.
+  - The number of generated queries is controlled explicitly, and is not tied 1:1 to the number of provided seed items.
   - Output diversity/coverage is enforced via sampling/selection constraints
 - **Staged and schema-driven generation**
   - Generation proceeds in two stages:
