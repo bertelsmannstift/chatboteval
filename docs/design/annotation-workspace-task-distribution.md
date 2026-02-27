@@ -1,3 +1,5 @@
+<!-- REMOVED: SG requested removal from PR — reads as operational guidance, not architectural design. Kept locally for reference. Relocate relevant pieces per PR #10 review. -->
+
 # Workspace & Task Distribution
 
 Configuration of Argilla workspaces and annotation task assignment for stratified annotation.
