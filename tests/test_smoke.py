@@ -1,12 +1,13 @@
 """Smoke tests."""
 
+
 def test_package_importable() -> None:
     """Smoke test: the installed package can be imported."""
     import chatboteval
 
     assert chatboteval is not None
-    
-    
+
+
 def test_curated_symbols_exist() -> None:
     """Smoke: curated public symbols are accessible at the top level."""
     import chatboteval
@@ -44,8 +45,12 @@ def test_cli_does_not_import_core() -> None:
     for py_file in cli_dir.rglob("*.py"):
         tree = ast.parse(py_file.read_text())
         for node in ast.walk(tree):
-            if isinstance(node, (ast.Import, ast.ImportFrom)):
-                if isinstance(node, ast.ImportFrom):
-                    assert not (node.module or "").startswith("chatboteval.core"), (
+            if isinstance(node, ast.ImportFrom):
+                assert not (node.module or "").startswith("chatboteval.core"), (
+                    f"{py_file} imports from chatboteval.core directly — boundary violation"
+                )
+            elif isinstance(node, ast.Import):
+                for alias in node.names:
+                    assert not alias.name.startswith("chatboteval.core"), (
                         f"{py_file} imports from chatboteval.core directly — boundary violation"
                     )
