@@ -38,7 +38,8 @@ def test_cli_does_not_import_core() -> None:
     import ast
     import pathlib
 
-    cli_dir = pathlib.Path("src/chatboteval/cli")
+    cli_dir = pathlib.Path(__file__).parent.parent / "src" / "chatboteval" / "cli"
+    assert cli_dir.exists(), f"CLI directory not found at {cli_dir}"
     for py_file in cli_dir.rglob("*.py"):
         tree = ast.parse(py_file.read_text())
         for node in ast.walk(tree):
