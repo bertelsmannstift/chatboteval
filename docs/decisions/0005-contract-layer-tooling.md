@@ -4,27 +4,23 @@ Status: Draft
 
 ## Decision
 
-The `core/` contract layer uses the following tooling choices:
+The `core/` contract layer uses following tooling choices:
 
 **Pydantic for all contract definitions** — domain types, data schemas, and config (via Pydantic Settings). Pydantic is a core dependency.
 
-**Rationale:** A frozen Pydantic model is a dataclass with validation built in — same `frozen=True`, same slot-like behaviour, same typing. The marginal runtime cost is negligible, and you get free serialisation (`model_dump_json()`/`model_dump()`), schema generation, and consistent validation without maintaining two paradigms. Using dataclasses for some things and Pydantic for others means everyone has to remember which is which and you lose the uniform serialisation interface. For a project this size, one tool everywhere is simpler than a conceptual split with no clear payoff.
+**Rationale:** A frozen Pydantic model is a dataclass with validation built in. Marginal runtime cost is negligible, and gives free serialisation (`model_dump_json()`/`model_dump()`), schema generation, and consistent validation without maintaining 2 paradigms.
 
 **Contract types over raw dicts** for all inter-module data exchange. Schema changes are breaking changes.
 
-**No business logic in the contract layer** — types, schemas, and config only. `core/` is the bottom of the dependency graph with zero internal imports.
+**No business logic in the contract layer** - types, schemas, and config only. `core/` is the bottom of the dependency graph w/ zero internal imports.
 
 **Dependency direction:** `core/ ← api/ ← cli/` (per [ADR-0007](0007-packaging-invocation-surface.md)). `api/` re-exports contract types directly so users get typed interfaces without knowing internal structure.
 
-**`StrEnum` for controlled vocabularies** — `Task` and other fixed enumerations. The vocabulary (`retrieval`/`grounding`/`generation`) is stable across all docs. Catches typos at import time, enables IDE autocomplete, centralises renaming.
+**`StrEnum` for controlled vocabularies** — `Task` and other fixed enumerations. The vocabulary (`retrieval`/`grounding`/`generation`) is stable across all docs. (Catches typos at import time, enables ide autocomplete, centralises renaming)
 
-**CSV for all data exchange.** The `context_set` column uses a JSON-serialised array. One format everywhere; the column is machine-consumed so readability is not a concern.
+**CSV for all data exchange.** ( -> the `context_set` column uses JSON-serialised array). One format everywhere; the column is machine-consumed so readability is not a concern.
 
-**`UUID` for record identifiers** — `record_uuid` fields are typed as `UUID`, not `str`. These are Argilla record UUIDs and should carry the correct type.
-
-**Frozen domain types** — all domain types use `frozen=True`. These are data records with all fields known at construction time. Frozen types prevent accidental mutation mid-pipeline, are hashable (usable in sets/dicts for deduplication), and enforce data integrity.
-
-**Annotation type inheritance** — `AnnotationBase` with shared metadata fields; task-specific types inherit and add labels. 7 shared fields across 3 types is enough duplication to warrant one level of inheritance.
+**Frozen domain types** — immutability by default; prevents accidental mutation mid-pipeline.
 
 **No per-file schema versioning.** Schema version is implicit from the package version (contract type changes → package version bump). Pydantic validation at load time is the version mismatch signal for CSV files.
 
