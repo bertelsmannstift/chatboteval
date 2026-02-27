@@ -18,6 +18,7 @@ def test_curated_symbols_exist() -> None:
 def test_cli_help() -> None:
     """CLI smoke: chatboteval --help exits 0."""
     from typer.testing import CliRunner
+
     from chatboteval.cli import app
 
     result = CliRunner().invoke(app, ["--help"])
@@ -27,6 +28,7 @@ def test_cli_help() -> None:
 def test_cli_version() -> None:
     """CLI wiring: chatboteval --version exits 0 and prints a version string."""
     from typer.testing import CliRunner
+
     from chatboteval import get_version
     from chatboteval.cli import app
 
