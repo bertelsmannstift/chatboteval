@@ -27,8 +27,8 @@ def test_cli_help() -> None:
 def test_cli_version() -> None:
     """CLI wiring: chatboteval --version exits 0 and prints a version string."""
     from typer.testing import CliRunner
-    from chatboteval.cli import app
     from chatboteval import get_version
+    from chatboteval.cli import app
 
     result = CliRunner().invoke(app, ["--version"])
     assert result.exit_code == 0
