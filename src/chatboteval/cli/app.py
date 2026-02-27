@@ -19,6 +19,7 @@ def main(
         is_eager=True,
     ),
 ) -> None:
+    """Run the chatboteval CLI."""
     if version:
         typer.echo(get_version())
         raise typer.Exit(code=0)
