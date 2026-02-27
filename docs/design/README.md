@@ -19,4 +19,5 @@ Design documents focus on (this is guidance, not a required section template):
 - [Annotation Export Schema](annotation-export-schema.md) — CSV export format and task-specific schemas
 - [Annotation UI Presentation](annotation-presentation.md) — UI presentation model, field visibility, and question wording
 - [Synthetic Test Set](synthetic-test-set.md) — Query generation, prompt variation, and response collection
+- [Package Contracts](infra-package-contracts.md) — Contract layer layout: canonical types, schemas, path conventions, and config
 - [Packaging and Invocation Surface](packaging-invocation-surface.md) — Package structure, module boundaries, and invocation bindings
