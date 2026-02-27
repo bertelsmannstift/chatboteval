@@ -1,3 +1,5 @@
+"""Typer CLI application for chatboteval."""
+
 from __future__ import annotations
 
 import typer
@@ -9,6 +11,7 @@ app = typer.Typer(add_completion=False)
 
 @app.callback(invoke_without_command=True)
 def main(
+    ctx: typer.Context,
     version: bool = typer.Option(
         False,
         "--version",
@@ -19,3 +22,7 @@ def main(
     if version:
         typer.echo(get_version())
         raise typer.Exit(code=0)
+    if ctx.invoked_subcommand is None:
+        typer.echo(ctx.get_help())
+        raise typer.Exit(code=0)
+    

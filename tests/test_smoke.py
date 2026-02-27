@@ -1,6 +1,5 @@
 """Smoke tests."""
 
-
 def test_package_importable() -> None:
     """Smoke test: the installed package can be imported."""
     import chatboteval
@@ -13,7 +12,7 @@ def test_curated_symbols_exist() -> None:
     assert hasattr(chatboteval, "get_version")
 
 
-def test_cli_help(tmp_path) -> None:
+def test_cli_help() -> None:
     """CLI smoke: chatboteval --help exits 0."""
     from typer.testing import CliRunner
     from chatboteval.cli import app
