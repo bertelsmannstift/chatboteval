@@ -91,6 +91,19 @@ One record per RAG query-response cycle:
 | `chunk_rank` | int | Position in the flat (post-rerank) chunk list |
 | `text` | string | Chunk text content |
 
+>### chunk_rank
+>**NB:**`chunk_rank` is not a concern of the initial import schema/contract, but rather it is a derived attribute from upstream transformation processes prior to analysis.
+>
+>Retrieval metrics (MRR@K, NDCG@K) require a flat, ordered list of K chunks. When a reranker scores at document level (not chunk level), chunk rank is derived as:
+>
+>1. Sort documents by reranker score (descending)
+>2. For each document in rank order, enumerate its selected chunks in document order
+>3. `chunk_rank` = 1-indexed position in the resulting flat list
+>
+>This treats all chunks from a higher-ranked document as more relevant than chunks from a lower-ranked document (=consistent with the reranker's signal). 
+>
+>**NB:** If the source system provides per-chunk scores directly, `chunk_rank` can be derived from those instead.
+
 ## Outputs
 
 Three Argilla datasets, each receiving records from every import:
@@ -109,8 +122,6 @@ Three Argilla datasets, each receiving records from every import:
 - `chunk_rank` ← canonical `chunks[k].chunk_rank`
 - `language` ← canonical `language`
 
-**Questions:** `topically_relevant`, `evidence_sufficient`, `misleading`, `notes`
-
 ---
 
 ### `task2_grounding` — one record per answer-context set pair
@@ -124,8 +135,6 @@ Three Argilla datasets, each receiving records from every import:
 - `record_uuid`
 - `language` ← canonical `language`
 
-**Questions:** `support_present`, `unsupported_claim_present`, `contradicted_claim_present`, `source_cited`, `fabricated_source`, `notes`
-
 ---
 
 ### `task3_generation` — one record per query-answer pair
@@ -137,8 +146,6 @@ Three Argilla datasets, each receiving records from every import:
 **Metadata (stored, not shown):**
 - `record_uuid`
 - `language` ← canonical `language`
-
-**Questions:** `proper_action`, `response_on_topic`, `helpful`, `incomplete`, `unsafe_content`, `notes`
 
 ## Failure Modes
 

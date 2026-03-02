@@ -60,8 +60,6 @@ Export as human-readable CSV, flat format, one row per annotator response vector
 
 Export schemas define what downstream pipelines need. They are not a mirror of what annotators see in the annotation interface (field naming and structure may differ).
 
->**TODO**: a separate PR will add an independent `schema/` layer (add cross-ref when done), this pydantic model will be the SSOT. Below is initial proposal:
-
 ### Shared metadata columns (all tasks)
 
 | Column | Type | Description |
