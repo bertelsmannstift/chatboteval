@@ -1,7 +1,5 @@
 """Typer CLI application for chatboteval."""
 
-from __future__ import annotations
-
 import typer
 
 from chatboteval.api import get_version
