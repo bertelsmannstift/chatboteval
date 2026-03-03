@@ -9,20 +9,33 @@ Architectural choices underpinning this layer (Pydantic at boundaries, frozen da
 
 ---
 
-## Directory structure
+## Contract scaffold
 
 ```
-src/chatboteval/core/
-├── schema/               # Boundary contracts — Pydantic SSOT
-│   ├── __init__.py         # Re-exports for clean imports
-│   ├── base.py             # Task enum and shared schema types
-│   ├── annotations.py      # Import record + annotation schemas
-│   └── csv_io.py           # CSV read/write & serialisation logic
-├── types/                # Runtime types (frozen dataclasses)
-│   └── __init__.py         # e.g. run result types, internal helpers
-├── paths.py              # PathResolver
-├── settings_base.py      # ResolvableSettings base class
-└── settings.py           # Global config (Pydantic Settings)
+src/chatboteval/
+├── core/                          # Contract layer — dependency root
+│   ├── schema/                    # Boundary schemas (Pydantic SSOT)
+│   │   ├── __init__.py
+│   │   ├── base.py                # Task enum, shared types
+│   │   ├── annotations.py         # Import record + annotation schemas
+│   │   └── csv_io.py              # Serialisation logic
+│   ├── types/                     # Runtime types (frozen dataclasses)
+│   │   └── __init__.py
+│   ├── paths.py                   # PathResolver
+│   ├── settings_base.py           # ResolvableSettings base class
+│   └── settings.py                # Global config (Pydantic Settings)
+├── <tool>/                        # e.g. querygen/, eval/
+│   ├── <tool>_settings.py         # RunSettings for this tool
+│   └── ...
+└── api/
+    └── <tool>.py                  # Entrypoint: resolve(), PathResolver init
+
+<workspace_dir>/
+  data/                            # datasets
+  outputs/                         # computed results
+
+~/.chatboteval/
+  config.yaml                      # user config (optional)
 ```
 
 ---
@@ -147,15 +160,15 @@ File naming: `retrieval.csv`, `grounding.csv`, `generation.csv`.
 
 > Frozen dataclasses in `core/types/` — internal ergonomic types that don't cross module boundaries and don't need Pydantic validation.
 
-Examples: run result objects (run_id, output paths, counts, summary stats). These may reference schema models (e.g. `spec: QueryGenerationSpec`) but do not duplicate field definitions or add validation constraints. They are not contracts — they're implementation conveniences.
+Examples: run result objects (run_id, output paths, counts, summary stats). These may reference schema models but do not duplicate field definitions or add validation constraints. They are not contracts — they're implementation conveniences.
 
 ```python
 @dataclass(frozen=True)
-class QueryGenRunResult:
+class ImportRunResult:
     run_id: str
-    output_path: Path
-    spec: QueryGenerationSpec       # references the boundary schema
-    row_count: int
+    spec: ImportSpec                # references the boundary schema — provenance
+    output_paths: list[Path]        # one per task dataset
+    record_count: int
 ```
 
 
@@ -195,9 +208,16 @@ class PathResolver:
         return self.workspace_dir / "outputs"
 ```
 
-The resolver is initialised at the API/CLI entrypoint using `Path.cwd()` (or a user-provided path). Consuming code imports the resolver rather than constructing paths — single resolution point, easy to override in tests or via config.
+The resolver is initialised once at the API/CLI entrypoint and passed down. Consuming code uses the resolver rather than constructing paths directly — single resolution point, easy to override in tests.
 
-> Directory structure is fixed by convention. Only override is `workspace_dir` itself, which shifts the entire tree.
+Tools that need a tool-specific output subdir compute it at the entrypoint — no subclassing needed:
+
+```python
+paths = PathResolver(workspace_dir=Path(work_dir) if work_dir else Path.cwd())
+tool_outputs = paths.outputs / "querygen"
+```
+
+> Directory structure is fixed by convention. Only override is `workspace_dir` itself, which shifts the entire tree. `PathResolver` is shared across all tools — workspace layout is universal.
 
 
 ---
@@ -279,7 +299,7 @@ class QueryGenSettings(BaseModel):
     n_candidates: int = 5
 
 class QueryGenRunSettings(ResolvableSettings):
-    work_dir: Path = Field(default_factory=lambda: Path(".").resolve())
+    work_dir: Path                  # no default — resolved explicitly at entrypoint
     run_id: str | None = None
     gen: QueryGenSettings = Field(default_factory=QueryGenSettings)
 ```
@@ -290,7 +310,11 @@ def run_querygen(raw_csv, *, work_dir=None, run_id=None, diversity=None, config_
     config = load_yaml(config_path) if config_path else None
     cfg = QueryGenRunSettings.resolve(
         config=config,
-        overrides={"work_dir": work_dir, "run_id": run_id, "gen": {"diversity": diversity}},
+        overrides={
+            "work_dir": Path(work_dir) if work_dir else Path.cwd(),  # resolved at entrypoint
+            "run_id": run_id,
+            "gen": {"diversity": diversity},
+        },
     )
     # orchestrator uses cfg.gen.diversity, cfg.work_dir, etc.
 ```
