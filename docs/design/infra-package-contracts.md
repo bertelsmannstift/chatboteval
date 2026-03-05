@@ -2,9 +2,9 @@
 
 ## Purpose
 
-Scaffolds the contract layer for `chatboteval` — canonical schemas, path conventions, and config structures that all internal modules depend on. Each section is a stub to be developed during implementation. Together they form the shared vocabulary and structural conventions for the whole package.
+Scaffolds the contract layer for `chatboteval` — canonical schemas, path conventions, and config structures that all internal modules depend on. Each section describes patterns to be followed during implementation; concrete schemas will be later defined in tool-specific issue specs and code PRs.
 
-Architectural choices underpinning this layer (Pydantic at boundaries, frozen dataclasses for runtime types, dependency direction, CSV interchange) are captured in [ADR-0005](../decisions/0005-contract-layer-tooling.md).
+Tooling choices underpinning this layer (Pydantic @ boundaries, dataclasses for runtime types, dependency dir, CSV interchange) are captured in [ADR-0005](../decisions/0005-contract-layer-tooling.md).
 
 
 ---
@@ -13,22 +13,20 @@ Architectural choices underpinning this layer (Pydantic at boundaries, frozen da
 
 ```
 src/chatboteval/
-├── core/                          # Contract layer — dependency root
-│   ├── schema/                    # Boundary schemas (Pydantic SSOT)
-│   │   ├── __init__.py
-│   │   ├── base.py                # Task enum, shared types
-│   │   ├── annotations.py         # Import record + annotation schemas
-│   │   └── csv_io.py              # Serialisation logic
+├── core/
+│   ├── schemas/                   # Boundary schemas (Pydantic SSOT)
+|   |   ├── __init__.py
+│   │   └── <tool>_*.py            
 │   ├── types/                     # Runtime types (frozen dataclasses)
 │   │   └── __init__.py
-│   ├── paths.py                   # PathResolver
-│   ├── settings_base.py           # ResolvableSettings base class
-│   └── settings.py                # Global config (Pydantic Settings)
-├── <tool>/                        # e.g. querygen/, eval/
-│   ├── <tool>_settings.py         # RunSettings for this tool
-│   └── ...
-└── api/
-    └── <tool>.py                  # Entrypoint: resolve(), PathResolver init
+│   ├── settings/
+│   │   ├── settings_base.py       # ResolveSettings base class
+│   │   └── <tool>_settings.py     
+│   └── paths.py                   # PathResolver
+├── api/
+│   └── <tool>.py                  # Entrypoint: resolve(), PathResolver init
+└── cli/
+    └── commands/
 
 <workspace_dir>/
   data/                            # datasets
@@ -38,84 +36,27 @@ src/chatboteval/
   config.yaml                      # user config (optional)
 ```
 
+Dependency direction: `core/ ← api/ ← cli/` (per [ADR-0007](../decisions/0007-packaging-invocation-surface.md)).
+
+`core/schemas/` is dependency root — no internal imports. Tool implementations and `api/` import from it; it imports from nothing.
+
+
 ---
 
 ## 1. Boundary Schemas
 
-> Pydantic models in `core/schema/` — the single source of truth for all inter-module contracts. CSV/JSON are downstream serialisations of these models.
+Pydantic models in `core/schemas/` — the single source of truth for all inter-module contracts. CSV/JSON are downstream serialisations of these models, not parallel definitions.
 
-### Controlled vocabulary
+Schema categories:
 
-```python
-class Task(StrEnum):
-    RETRIEVAL = "retrieval"
-    GROUNDING = "grounding"
-    GENERATION = "generation"
-```
+- **Controlled vocabularies** — `StrEnum` types for fixed enumerations. Centralises renaming, catches typos at import time, enables IDE autocomplete.
+- **Input specs** — user-facing configuration contracts (e.g. generation parameters, sampling distributions).
+- **LLM structured outputs** — contracts for model responses at LLM boundaries. Fields carry `Field(description=...)` as instructions to the model.
+- **Output records** — contracts for on-disk artefacts (CSV rows, metadata sidecars).
 
-### Import record
+Per-tool schemas are organised by tool prefix (e.g. `querygen_input.py`, `querygen_output.py`, `querygen_plan.py`).
 
-Input format to `generate` and `annotation import`. Canonical contract for data arriving from a source adapter:
-
-```
-QueryResponsePair
-  query: str
-  response: str
-  context_set: list[str]       # one entry per retrieved chunk
-  source_id: str               # opaque identifier from source system
-  metadata: dict               # pass-through from source (timestamps, model id, etc.)
-```
-
-### Annotation schemas
-
-**Annotation base:**
-
-```python
-class AnnotationBase(BaseModel, frozen=True):
-    record_uuid: UUID
-    annotator_id: str
-    language: str
-    inserted_at: datetime            # when record was loaded into Argilla (batch provenance)
-    created_at: datetime             # response submission timestamp
-    record_status: str               # Argilla record status: pending | completed
-    notes: str | None
-```
-
-**Task-specific annotation schemas** — inherit from `AnnotationBase`, add task-specific labels. Match the [export schema](annotation-export-schema.md).
-
-```
-RetrievalAnnotation(AnnotationBase)        # unit: (query, chunk)
-  input_query: str
-  chunk: str
-  chunk_id: str
-  doc_id: str
-  chunk_rank: int
-  topically_relevant: bool
-  evidence_sufficient: bool
-  misleading: bool
-```
-
-```
-GroundingAnnotation(AnnotationBase)        # unit: (answer, context_set)
-  answer: str
-  context_set: str                         # concatenated with [CTX_SEP]
-  support_present: bool
-  unsupported_claim_present: bool
-  contradicted_claim_present: bool
-  source_cited: bool
-  fabricated_source: bool
-```
-
-```
-GenerationAnnotation(AnnotationBase)       # unit: (query, answer)
-  query: str
-  answer: str
-  proper_action: bool
-  response_on_topic: bool
-  helpful: bool
-  incomplete: bool
-  unsafe_content: bool
-```
+All schema models are frozen by default. Schema changes are breaking changes requiring version bumps.
 
 
 ---
@@ -124,52 +65,29 @@ GenerationAnnotation(AnnotationBase)       # unit: (query, answer)
 
 > On-disk format — downstream of the Pydantic schemas above. Flat, string-typed, one row per record.
 
-`core/schema/csv_io.py` handles serialisation/deserialisation. This section documents only the differences between the in-memory schema and the on-disk representation.
+`core/schemas/csv_io.py` handles serialisation/deserialisation. This section documents only the differences between the in-memory schema and the on-disk representation.
 
-### Import record CSV
 
-Flat serialisation of `QueryResponsePair`, plus an `id` column:
+CSV is the interchange format for all tabular data. One format everywhere.
 
-| Column | Type | Notes |
-|---|---|---|
-| `id` | str | Unique identifier for the QR pair (not on the schema model) |
-| `query` | str | |
-| `response` | str | |
-| `context_set` | str (JSON array) | `list[str]` serialised as JSON array |
-| `source` | str | `source_id` on the schema model |
+Conventions:
 
-### Annotation export CSVs
+- 1 CSV per record type, flat and string-typed
+- List fields serialised as JSON arrays (e.g. `context_set`)
+- Enums serialised as string values
+- UUIDs and datetimes serialised as strings (ISO 8601 for dates)
+- Canonical column order defined per schema as a module-level constant
 
-Three task-specific CSVs, one per task. Each is a flat serialisation of the corresponding annotation schema. See [Annotation Export Schema](annotation-export-schema.md) for full column definitions.
-
-Serialisation differences from the schema models:
-
-| Schema field | CSV column | Difference |
-|---|---|---|
-| `Task` enum | `task` (str) | Enum serialised as string value |
-| `UUID` | `record_uuid` (str) | UUID serialised as string |
-| `context_set: list[str]` | `context_set` (str) | Chunks concatenated with `[CTX_SEP]` separator |
-| `datetime` fields | str | ISO 8601 formatted |
-
-File naming: `retrieval.csv`, `grounding.csv`, `generation.csv`.
+Serialisation/deserialisation logic lives in dedicated helpers, not on the schema models themselves.
 
 
 ---
 
 ## 3. Runtime Types
 
-> Frozen dataclasses in `core/types/` — internal ergonomic types that don't cross module boundaries and don't need Pydantic validation.
+Frozen dataclasses in `core/types/` — internal ergonomic types that don't cross module boundaries and don't need Pydantic validation.
 
-Examples: run result objects (run_id, output paths, counts, summary stats). These may reference schema models but do not duplicate field definitions or add validation constraints. They are not contracts — they're implementation conveniences.
-
-```python
-@dataclass(frozen=True)
-class ImportRunResult:
-    run_id: str
-    spec: ImportSpec                # references the boundary schema — provenance
-    output_paths: list[Path]        # one per task dataset
-    record_count: int
-```
+Examples: run result objects (run_id, output paths, record counts). These may reference schema models but don't duplicate field definitions. They are not contracts — they're implementation conveniences free to evolve without triggering breaking-change discipline.
 
 
 ---
@@ -185,39 +103,11 @@ Canonical locations for data artefacts produced and consumed by the pipeline (no
 
 ~/.chatboteval/
   config.yaml           # user config (optional — see Section 5)
-
-./apps/
-  annotation/
-    docker-compose.yml  # Argilla stack (local mode only)
-    .env
 ```
 
-Paths are exposed via a `PathResolver` dataclass in `src/chatboteval/core/paths.py`:
+A `PathResolver` dataclass in `core/paths.py` exposes these locations. Initialised once at the API/CLI entrypoint and threaded down — consuming code uses the resolver rather than constructing paths directly (single resolution point, easy to override in tests).
 
-```python
-@dataclass
-class PathResolver:
-    workspace_dir: Path
-
-    @property
-    def data(self) -> Path:
-        return self.workspace_dir / "data"
-
-    @property
-    def outputs(self) -> Path:
-        return self.workspace_dir / "outputs"
-```
-
-The resolver is initialised once at the API/CLI entrypoint and passed down. Consuming code uses the resolver rather than constructing paths directly — single resolution point, easy to override in tests.
-
-Tools that need a tool-specific output subdir compute it at the entrypoint — no subclassing needed:
-
-```python
-paths = PathResolver(workspace_dir=Path(work_dir) if work_dir else Path.cwd())
-tool_outputs = paths.outputs / "querygen"
-```
-
-> Directory structure is fixed by convention. Only override is `workspace_dir` itself, which shifts the entire tree. `PathResolver` is shared across all tools — workspace layout is universal.
+Tools that need a tool-specific output subdirectory compute it at the entrypoint (e.g. `paths.outputs / "querygen"`) — no subclassing needed. Directory structure is fixed by convention; only `workspace_dir` itself is overridable, which shifts the entire tree.
 
 
 ---
@@ -226,100 +116,30 @@ tool_outputs = paths.outputs / "querygen"
 
 ### Global config
 
-Structure of `~/.chatboteval/config.yaml`, parsed at startup by `core/settings.py` using Pydantic Settings.
-
-**The config file is optional.** Built-in defaults mean the tool works with zero config — the file is only needed when overriding defaults (e.g. Argilla credentials, custom output paths).
-
-```yaml
-argilla:
-  mode: local              # local | hosted
-  url: http://localhost:6900
-  api_key: owner.apikey
-
-output:
-  workspace_dir: ./my_workspace
-```
+Optional user config at `~/.chatboteval/config.yaml`, parsed by `core/settings/` using Pydantic Settings. Built-in defaults mean the tool works with zero config — the file is only needed when overriding defaults (e.g. credentials, custom output paths).
 
 Full precedence chain (highest to lowest):
+
 ```
 CLI flags / API call overrides          ← one-off overrides
         ↓
 CHATBOTEVAL_* env vars
         ↓
-./my_project/querygen.yaml              ← optional project-level tool config
+Config file (~/.chatboteval/config.yaml)
         ↓
-~/.chatboteval/config.yaml              ← user-global (argilla creds, output paths)
-        ↓
-built-in defaults
+Built-in defaults
 ```
-
-`resolve()` accepts a `config: dict | None` — the caller loads whichever config file is relevant (global, project-level, or none) and passes it in. The merge is the same regardless of source.
-
-> Global config only at `~/.chatboteval/config.yaml` for v1.0. Follows the dbt/AWS CLI pattern, appropriate for a tool with credentials. Project-level tool configs are optional and caller-supplied.
 
 ### Tool-specific settings
 
-Settings modules live alongside their tool, not in `core/`:
+Each tool has a settings module in `core/settings/` containing:
 
-```
-src/chatboteval/
-├── core/
-│   ├── settings_base.py      # ResolvableSettings base class (shared)
-│   └── settings.py           # Global config (argilla, output paths)
-├── querygen/
-│   ├── querygen_settings.py  # QueryGenRunSettings
-│   └── ...
-└── api/
-    ├── querygen.py           # calls QueryGenRunSettings.resolve()
-    └── ...
-```
+- **Semantically scoped settings classes** for logical groupings (e.g. LLM config, sampling parameters)
+- **A `RunSettings` class** that bundles the above plus run-level fields and inherits from `ResolveSettings`
 
-Each tool's settings module contains:
+`ResolveSettings` in `core/settings/settings_base.py` provides a shared `resolve()` classmethod handling the precedence merge (recursive deep-merge, so nested dicts don't clobber siblings). Each tool's `RunSettings` inherits this — no reimplementation per tool.
 
-- **Semantically scoped settings classes** for logical groupings (e.g. `QueryGenSettings`, `LangChainModelSettings`)
-- **A `RunSettings` class** that bundles the above plus tool-level fields (`work_dir`, `run_id`, etc.) and exposes a `resolve()` class method
-
-The `resolve()` merge logic lives once in `ResolvableSettings` in `core/settings_base.py`; each `RunSettings` class inherits it:
-
-```python
-# core/settings_base.py
-class ResolvableSettings(BaseModel):
-    @classmethod
-    def resolve(cls, *, config: dict | None, overrides: dict) -> "ResolvableSettings":
-        # Precedence: overrides > config > defaults
-        # Recursive merge so nested dicts don't clobber each other
-        merged = deep_merge(config or {}, strip_none(overrides))
-        return cls.model_validate(merged)
-```
-
-```python
-# querygen_settings.py
-class QueryGenSettings(BaseModel):
-    diversity: float = 0.7
-    n_candidates: int = 5
-
-class QueryGenRunSettings(ResolvableSettings):
-    work_dir: Path                  # no default — resolved explicitly at entrypoint
-    run_id: str | None = None
-    gen: QueryGenSettings = Field(default_factory=QueryGenSettings)
-```
-
-```python
-# api/querygen.py
-def run_querygen(raw_csv, *, work_dir=None, run_id=None, diversity=None, config_path=None):
-    config = load_yaml(config_path) if config_path else None
-    cfg = QueryGenRunSettings.resolve(
-        config=config,
-        overrides={
-            "work_dir": Path(work_dir) if work_dir else Path.cwd(),  # resolved at entrypoint
-            "run_id": run_id,
-            "gen": {"diversity": diversity},
-        },
-    )
-    # orchestrator uses cfg.gen.diversity, cfg.work_dir, etc.
-```
-
-> Task-specific configuration (active tasks, stratification rules, distribution overlap targets) is not runtime config — it is applied at dataset creation time during `chatboteval annotation import`. See [Workspace & Task Distribution](annotation-workspace-task-distribution.md).
+The API entrypoint (`api/<tool>.py`) calls `RunSettings.resolve()` with caller-supplied overrides and config, then passes the resolved settings to the implementation layer.
 
 
 ---
@@ -328,4 +148,3 @@ def run_querygen(raw_csv, *, work_dir=None, run_id=None, diversity=None, config_
 
 - [ADR-0005: Contract Layer Tooling](../decisions/0005-contract-layer-tooling.md) — tooling choices underpinning this layer
 - [ADR-0007: Packaging and Invocation Surface](../decisions/0007-packaging-invocation-surface.md) — module dependency direction
-- [Annotation Export Schema](annotation-export-schema.md) — full column definitions for export CSVs
