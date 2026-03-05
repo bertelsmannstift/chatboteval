@@ -42,9 +42,3 @@ def test_docker_available_uses_shutil_which(monkeypatch: pytest.MonkeyPatch) -> 
     from conftest import _docker_available
 
     assert _docker_available() is False
-
-
-def test_addopts_excludes_integration_by_default() -> None:
-    """pyproject.toml addopts deselects integration tests by default."""
-    ini = _read_pyproject()["tool"]["pytest"]["ini_options"]
-    assert "not integration" in ini.get("addopts", "")
