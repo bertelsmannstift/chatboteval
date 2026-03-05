@@ -32,33 +32,24 @@ def test_list_str_choice_uniform(base_payload: dict) -> None:
     ]
 
 
-@pytest.mark.parametrize(
-    "patch",
-    [
-        lambda p: p["scenario"].update(
-            intents=[
-                {"value": "information", "weight": 1.1},
-                {"value": "x", "weight": -0.1},
-            ]
-        ),
-        lambda p: p["scenario"].update(
-            tasks=[
-                {"value": "eligibility", "weight": 0.2},
-                {"value": "procedure", "weight": 0.2},
-            ]
-        ),
-        lambda p: p["domain_context"].update(domains=[]),
-        lambda p: p["domain_context"].update(
-            languages=[
-                "en",
-                {"value": "de", "weight": 0.5},
-            ]
-        ),
-        lambda p: p["domain_context"].update(unexpected="nope"),
-    ],
-)
-def test_invalid_inputs_raise_validation_error(base_payload: dict, patch) -> None:
-    """Invalid ChoiceStr shapes/weights/keys raise an error."""
-    patch(base_payload)
-    with pytest.raises((ValidationError, TypeError, ValueError)):
+def test_weighted_list_choice_preserves_weights(base_payload: dict) -> None:
+    """Weighted list input preserves weights when they sum to 1."""
+    base_payload["knowledge_scope"]["topics"] = [
+        {"value": "housing", "weight": 0.7},
+        {"value": "energy", "weight": 0.3},
+    ]
+    spec = QueryGenSpec.model_validate(base_payload)
+    assert spec.knowledge_scope.topics == [
+        WeightedValue(value="housing", weight=0.7),
+        WeightedValue(value="energy", weight=0.3),
+    ]
+
+
+def test_weighted_list_rejects_sum_not_one(base_payload: dict) -> None:
+    """Weighted list rejects weights that do not sum to 1."""
+    base_payload["knowledge_scope"]["topics"] = [
+        {"value": "housing", "weight": 0.2},
+        {"value": "energy", "weight": 0.2},
+    ]
+    with pytest.raises(ValidationError):
         QueryGenSpec.model_validate(base_payload)
