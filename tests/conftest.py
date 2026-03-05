@@ -24,8 +24,6 @@ def _docker_available() -> bool:
 
 @pytest.fixture(autouse=True)
 def _skip_without_docker(request: pytest.FixtureRequest) -> None:
-    """Check for Docker availability before integration tests.
-
-    Runs before every test -> checks if test is marked as "integration"
-    and if Docker is available. If not, skips the test.
-    """
+    """Skip integration-marked tests when Docker CLI is not on PATH."""
+    if request.node.get_closest_marker("integration") and not _docker_available():
+        pytest.skip("Docker CLI not available")
