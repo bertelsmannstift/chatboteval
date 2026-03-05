@@ -25,6 +25,6 @@ status:
 	docker compose -f $(COMPOSE_FILE) --env-file $(ENV_FILE) ps
 
 test-stack: setup
-	@curl -sf http://localhost:6900/api/v1/status | grep -q '"status"' || (echo "Stack health check failed" && exit 1)
+	@python3 -c "import urllib.request; r = urllib.request.urlopen(urllib.request.Request('http://localhost:6900/api/v1/me', headers={'X-Argilla-Api-Key': 'argilla.apikey'}), timeout=10); assert r.status == 200" || (echo "Stack health check failed" && exit 1)
 	$(MAKE) teardown
 	@echo "Stack smoke test passed"

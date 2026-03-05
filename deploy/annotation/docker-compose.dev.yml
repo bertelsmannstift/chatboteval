@@ -21,7 +21,7 @@ services:
       redis:
         condition: service_started
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:6900/api/v1/status"]
+      test: ["CMD-SHELL", "python3 -c \"import urllib.request; urllib.request.urlopen(urllib.request.Request('http://localhost:6900/api/v1/me', headers={'X-Argilla-Api-Key': '$${API_KEY}'}), timeout=5)\""]
       interval: 10s
       timeout: 5s
       retries: 10
