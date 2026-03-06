@@ -11,9 +11,7 @@ readme = "README.md"
 license = { file = "LICENSE.md" }
 requires-python = ">=3.12"
 
-dependencies = [
-    "typer>=0.9",
-]
+dependencies = ["typer>=0.9"]
 
 [project.optional-dependencies]
 test = ["pytest>=9.0",]
@@ -31,6 +29,7 @@ build-backend = "hatchling.build"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = ["integration: mark test as requiring a live Docker/Argilla stack"]
 
 [tool.ruff]
 line-length = 120
