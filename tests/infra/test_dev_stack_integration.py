@@ -15,7 +15,7 @@ def test_stack_boots_healthy() -> None:
         resp = urllib.request.urlopen("http://localhost:6900/api/docs", timeout=10)
         assert resp.status == 200, f"Argilla docs returned {resp.status}"
     finally:
-        subprocess.run(["make", "teardown"], capture_output=True, timeout=60)
+        subprocess.run(["make", "teardown"], check=True, capture_output=True, timeout=60)
 
 
 @pytest.mark.integration
@@ -33,7 +33,7 @@ def test_argilla_api_authenticated() -> None:
         assert data["username"] == "argilla"
         assert data["role"] == "owner"
     finally:
-        subprocess.run(["make", "teardown"], capture_output=True, timeout=60)
+        subprocess.run(["make", "teardown"], check=True, capture_output=True, timeout=60)
 
 
 @pytest.mark.integration

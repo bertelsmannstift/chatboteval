@@ -1,6 +1,6 @@
 services:
   argilla:
-    image: argilla/argilla-server:latest
+    image: argilla/argilla-server:v2.8.0
     restart: unless-stopped
     ports:
       - "${ARGILLA_PORT:-6900}:6900"
@@ -30,7 +30,7 @@ services:
       - argilla
 
   worker:
-    image: argilla/argilla-server:latest
+    image: argilla/argilla-server:v2.8.0
     restart: unless-stopped
     command: ["python", "-m", "argilla_server.cli", "worker", "--num-workers", "2"]
     environment:
