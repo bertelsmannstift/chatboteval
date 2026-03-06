@@ -1,1 +1,1 @@
-"""Annotation subpackage for chatbot evaluation with Argilla."""
+"""Public annotation namespace - re-exports from internal modules."""

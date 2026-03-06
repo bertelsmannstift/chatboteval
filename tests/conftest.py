@@ -10,7 +10,7 @@ def pytest_configure(config: pytest.Config) -> None:
 
     - registers integration marker programmatically.
     - belt-and-suspenders w/ pyproject.toml registration
-    — = ensures no "unknown marker" warnings regardless of how pytest invoked
+    - = ensures no "unknown marker" warnings regardless of how pytest invoked
     """
     config.addinivalue_line(
         "markers",
