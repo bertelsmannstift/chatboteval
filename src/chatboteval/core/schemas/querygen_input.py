@@ -16,6 +16,7 @@ class WeightedValue(BaseModel):
     @field_validator("value")
     @classmethod
     def value_non_empty(cls, v: str) -> str:
+        """Reject blank weighted values."""
         v = v.strip()
         if not v:
             raise ValueError("value must be a non-empty string")
@@ -24,6 +25,7 @@ class WeightedValue(BaseModel):
     @field_validator("weight")
     @classmethod
     def weight_non_negative(cls, v: float) -> float:
+        """Reject negative weights."""
         if v < 0:
             raise ValueError("weight must be non-negative")
         return float(v)
@@ -122,6 +124,7 @@ class SafetySpec(BaseModel):
     @field_validator("disallowed_topics")
     @classmethod
     def disallowed_topics_non_empty(cls, v: list[str] | None) -> list[str] | None:
+        """Reject blank disallowed topic entries."""
         if v is None:
             return None
         cleaned = [s.strip() for s in v]
