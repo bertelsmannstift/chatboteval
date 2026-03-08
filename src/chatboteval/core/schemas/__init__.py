@@ -1,1 +1,1 @@
-"""Pydantic schemas for chatboteval core."""
+"""Core boundary contracts."""
