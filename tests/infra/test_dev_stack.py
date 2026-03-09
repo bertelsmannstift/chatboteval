@@ -15,7 +15,17 @@ EXPECTED_SERVICES = {"argilla", "worker", "postgres", "elasticsearch", "redis"}
 HEALTHCHECK_SERVICES = {"argilla", "postgres", "elasticsearch"}
 NAMED_VOLUME_SERVICES = {"argilla", "postgres", "elasticsearch", "redis"}
 REQUIRED_ENV_VARS = {"ARGILLA_PORT", "ARGILLA_USERNAME", "ARGILLA_PASSWORD", "ARGILLA_API_KEY", "POSTGRES_PASSWORD"}
-EXPECTED_MAKE_TARGETS = {"setup", "teardown", "stop", "logs", "status", "test-stack"}
+EXPECTED_MAKE_TARGETS = {
+    "docker-up",
+    "docker-down",
+    "docker-stop",
+    "docker-logs",
+    "docker-status",
+    "test-stack",
+    "test",
+    "test-integration",
+    "test-all",
+}
 
 
 def _load_compose() -> dict:

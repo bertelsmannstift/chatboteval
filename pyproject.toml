@@ -33,6 +33,7 @@ build-backend = "hatchling.build"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 markers = ["integration: mark test as requiring a live Docker/Argilla stack"]
+addopts = "-m 'not integration'"
 
 [tool.ruff]
 line-length = 120
