@@ -13,6 +13,8 @@ def _non_empty(v: str) -> str:
 
 
 class Chunk(ContractModel):
+    """Single retrieved chunk within a query-response pair."""
+
     chunk_id: str
     doc_id: str
     chunk_rank: int = Field(ge=1)
@@ -25,6 +27,8 @@ class Chunk(ContractModel):
 
 
 class QueryResponsePair(ContractModel):
+    """Canonical import record pairing a query with its response and chunks."""
+
     query: str
     answer: str
     chunks: list[Chunk] = Field(min_length=1)

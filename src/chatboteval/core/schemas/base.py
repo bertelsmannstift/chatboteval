@@ -6,6 +6,8 @@ from pydantic import BaseModel, ConfigDict
 
 
 class Task(StrEnum):
+    """Annotation task types."""
+
     RETRIEVAL = "retrieval"
     GROUNDING = "grounding"
     GENERATION = "generation"

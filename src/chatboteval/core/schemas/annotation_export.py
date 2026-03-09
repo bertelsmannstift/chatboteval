@@ -6,6 +6,8 @@ from chatboteval.core.schemas.base import ContractModel, Task
 
 
 class AnnotationBase(ContractModel):
+    """Base fields shared across annotation exports."""
+
     record_uuid: str
     annotator_id: str
     task: Task
@@ -16,6 +18,8 @@ class AnnotationBase(ContractModel):
 
 
 class RetrievalAnnotation(AnnotationBase):
+    """Exported annotation for a single retrieval judgement."""
+
     input_query: str
     chunk: str
     chunk_id: str
@@ -28,6 +32,8 @@ class RetrievalAnnotation(AnnotationBase):
 
 
 class GroundingAnnotation(AnnotationBase):
+    """Exported annotation for a single grounding judgement."""
+
     answer: str
     context_set: str
     support_present: bool
@@ -39,6 +45,8 @@ class GroundingAnnotation(AnnotationBase):
 
 
 class GenerationAnnotation(AnnotationBase):
+    """Exported annotation for a single generation judgement."""
+
     query: str
     answer: str
     proper_action: bool

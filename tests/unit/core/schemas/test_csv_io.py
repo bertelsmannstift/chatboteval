@@ -20,6 +20,7 @@ _DT = datetime(2024, 6, 1, 10, 0, 0, tzinfo=timezone.utc)
 
 @pytest.fixture
 def retrieval(language: str | None = None) -> RetrievalAnnotation:
+    """RetrievalAnnotation with default language."""
     return RetrievalAnnotation(
         record_uuid="r-001",
         annotator_id="ann-1",
@@ -42,6 +43,7 @@ def retrieval(language: str | None = None) -> RetrievalAnnotation:
 
 @pytest.fixture
 def retrieval_no_lang() -> RetrievalAnnotation:
+    """RetrievalAnnotation with language=None."""
     return RetrievalAnnotation(
         record_uuid="r-002",
         annotator_id="ann-2",
@@ -64,6 +66,7 @@ def retrieval_no_lang() -> RetrievalAnnotation:
 
 @pytest.fixture
 def grounding() -> GroundingAnnotation:
+    """Sample GroundingAnnotation."""
     return GroundingAnnotation(
         record_uuid="g-001",
         annotator_id="ann-3",
@@ -85,6 +88,7 @@ def grounding() -> GroundingAnnotation:
 
 @pytest.fixture
 def generation() -> GenerationAnnotation:
+    """Sample GenerationAnnotation."""
     return GenerationAnnotation(
         record_uuid="gen-001",
         annotator_id="ann-4",
@@ -108,6 +112,7 @@ def generation() -> GenerationAnnotation:
 
 
 def test_write_csv_empty_no_file(tmp_path: Path) -> None:
+    """Empty list produces no file."""
     out = tmp_path / "out.csv"
     write_csv([], out)
     assert not out.exists()
@@ -117,6 +122,7 @@ def test_write_csv_empty_no_file(tmp_path: Path) -> None:
 
 
 def test_write_csv_booleans_lowercase(tmp_path: Path, retrieval_no_lang: RetrievalAnnotation) -> None:
+    """Boolean values are written as lowercase true/false."""
     out = tmp_path / "ret.csv"
     write_csv([retrieval_no_lang], out)
     content = out.read_text()
@@ -129,6 +135,7 @@ def test_write_csv_booleans_lowercase(tmp_path: Path, retrieval_no_lang: Retriev
 
 
 def test_write_csv_none_as_empty_string(tmp_path: Path, retrieval_no_lang: RetrievalAnnotation) -> None:
+    """None values are written as empty strings."""
     out = tmp_path / "ret.csv"
     write_csv([retrieval_no_lang], out)
     import csv
@@ -142,6 +149,7 @@ def test_write_csv_none_as_empty_string(tmp_path: Path, retrieval_no_lang: Retri
 
 
 def test_write_csv_task_enum_as_string(tmp_path: Path, grounding: GroundingAnnotation) -> None:
+    """Task enum is written as its string value."""
     out = tmp_path / "grnd.csv"
     write_csv([grounding], out)
     import csv
@@ -155,6 +163,7 @@ def test_write_csv_task_enum_as_string(tmp_path: Path, grounding: GroundingAnnot
 
 
 def test_roundtrip_retrieval_with_language(tmp_path: Path) -> None:
+    """Retrieval with language survives CSV round-trip."""
     rec = RetrievalAnnotation(
         record_uuid="r-rt",
         annotator_id="ann-rt",
@@ -189,6 +198,7 @@ def test_roundtrip_retrieval_language_none(tmp_path: Path, retrieval_no_lang: Re
 
 
 def test_roundtrip_grounding(tmp_path: Path, grounding: GroundingAnnotation) -> None:
+    """Grounding annotation survives CSV round-trip."""
     out = tmp_path / "grnd.csv"
     write_csv([grounding], out)
     result = read_csv(out, GroundingAnnotation)
@@ -196,6 +206,7 @@ def test_roundtrip_grounding(tmp_path: Path, grounding: GroundingAnnotation) -> 
 
 
 def test_roundtrip_generation(tmp_path: Path, generation: GenerationAnnotation) -> None:
+    """Generation annotation survives CSV round-trip."""
     out = tmp_path / "gen.csv"
     write_csv([generation], out)
     result = read_csv(out, GenerationAnnotation)
@@ -205,6 +216,7 @@ def test_roundtrip_generation(tmp_path: Path, generation: GenerationAnnotation) 
 def test_roundtrip_multiple_rows(
     tmp_path: Path, retrieval_no_lang: RetrievalAnnotation, grounding: GroundingAnnotation
 ) -> None:
+    """Multiple rows survive CSV round-trip."""
     r1 = RetrievalAnnotation(
         record_uuid="multi-1",
         annotator_id="ann-a",
@@ -234,6 +246,7 @@ def test_roundtrip_multiple_rows(
 
 
 def test_read_csv_extra_column_raises(tmp_path: Path, grounding: GroundingAnnotation) -> None:
+    """Extra CSV columns cause validation error on read."""
     import csv
 
     out = tmp_path / "grnd.csv"
