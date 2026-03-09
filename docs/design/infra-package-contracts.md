@@ -39,7 +39,7 @@ src/chatboteval/
       <run_id>/                    # per-run artefacts
 
 ~/.chatboteval/
-  config.yaml                      # user config (optional, not auto-discovered yet)
+  config.yaml                      # user config (optional)
 ```
 
 Dependency direction: `core/ ← api/ ← cli/` (per [ADR-0007](../decisions/0007-packaging-invocation-surface.md)).
@@ -90,14 +90,14 @@ Serialisation/deserialisation logic lives in dedicated helpers, not on the schem
 
 ### Run metadata (JSON sidecar)
 
-Non-tabular, run-level metadata (e.g. `run_id`, `created_at`, model info) is written as a JSON sidecar alongside the CSV (e.g. `synthetic_queries.meta.json`). This avoids repeating per-run fields as columns in every CSV row.
+Non-tabular, run-level metadata (e.g. `run_id`, `created_at`, model info) is written as a JSON file alongside the CSV (e.g. `synthetic_queries.meta.json`). This avoids repeating per-run fields as columns in every CSV row.
 
 
 ---
 
 ## 3. Runtime Types
 
-Frozen dataclasses for internal ergonomic types that don't need Pydantic validation. These are not contracts — they're implementation conveniences free to evolve without triggering breaking-change discipline.
+Frozen dataclasses for internal ergonomic types that don't need Pydantic validation. These are not contracts, they're implementation conveniences free to evolve without triggering breaking-change discipline.
 
 General-purpose runtime types live in `core/types/`. Domain-specific frozen dataclasses (e.g. path bundles) live alongside their domain module (e.g. `core/paths/`).
 
@@ -139,9 +139,7 @@ Tool-specific path bundles (e.g. `QueryGenRunPaths` in `core/paths/querygen_path
 
 ### Global config
 
-Optional user config at `~/.chatboteval/config.yaml`. Built-in defaults mean the tool works with zero config — the file is only needed when overriding defaults (e.g. custom output paths).
-
-Config file auto-discovery is deferred — callers must pass the config path explicitly for now.
+Optional user config at `~/.chatboteval/config.yaml`, parsed by `core/settings/` using Pydantic Settings. Built-in defaults mean the tool works with zero config — the file is only needed when overriding defaults (e.g. credentials, custom output paths).
 
 Full precedence chain (highest to lowest):
 
@@ -150,14 +148,14 @@ CLI flags / API call overrides          ← one-off overrides
         ↓
 Environment variables
         ↓
-Config file (passed explicitly)
+Config file (~/.chatboteval/config.yaml)
         ↓
 Built-in defaults
 ```
 
 ### Secrets
 
-Secrets (API keys, credentials) are resolved separately from settings — they do not appear in config files or settings models. `core/settings/settings_base.py` provides a `resolve_provider_api_key()` helper that reads API keys from well-known environment variables (e.g. `MISTRAL_API_KEY`, `OPENAI_API_KEY`). A `MissingSecretError` is raised when the required key is not set.
+Secrets (API keys, credentials) are resolved separately from settings — they do not appear in config files or settings models. `core/settings/settings_base.py` provides a `resolve_provider_api_key()` helper that reads API keys from pre-known environment variables (e.g. `MISTRAL_API_KEY`, `OPENAI_API_KEY`). A `MissingSecretError` is raised when the required key is not set.
 
 ### Tool-specific settings
 
