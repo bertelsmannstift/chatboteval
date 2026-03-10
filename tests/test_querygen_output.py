@@ -1,6 +1,6 @@
 """Unit tests for the synthetic query generation output contract."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 import pytest
 from pydantic import ValidationError
@@ -50,9 +50,10 @@ def test_synthetic_query_row_rejects_blank_required_fields(
     valid_row_payload: dict[str, str | None], field_name: str
 ) -> None:
     """Required row fields reject blank strings."""
-    valid_row_payload[field_name] = "   "
-    with pytest.raises(ValidationError, match="value must be a non-empty string"):
-        SyntheticQueryRow.model_validate(valid_row_payload)
+    payload = dict(valid_row_payload)
+    payload[field_name] = "   "
+    with pytest.raises(ValidationError):
+        SyntheticQueryRow.model_validate(payload)
 
 
 @pytest.mark.parametrize(
@@ -63,8 +64,9 @@ def test_synthetic_query_row_optional_fields_accept_none(
     valid_row_payload: dict[str, str | None], field_name: str
 ) -> None:
     """Optional metadata fields accept None."""
-    valid_row_payload[field_name] = None
-    row = SyntheticQueryRow.model_validate(valid_row_payload)
+    payload = dict(valid_row_payload)
+    payload[field_name] = None
+    row = SyntheticQueryRow.model_validate(payload)
     assert getattr(row, field_name) is None
 
 
@@ -96,15 +98,16 @@ def test_synthetic_queries_meta_accepts_valid_payload(valid_meta_payload: dict[s
     """SyntheticQueriesMeta validates a complete metadata payload."""
     meta = SyntheticQueriesMeta.model_validate(valid_meta_payload)
     assert meta.run_id == "run_20260309_001"
-    assert meta.created_at == datetime(2026, 3, 9, 10, 30, 0, tzinfo=meta.created_at.tzinfo)
+    assert meta.created_at == datetime(2026, 3, 9, 10, 30, tzinfo=timezone.utc)
     assert meta.n_queries == 25
 
 
 def test_synthetic_queries_meta_rejects_non_positive_n_queries(valid_meta_payload: dict[str, object]) -> None:
     """n_queries must be strictly positive."""
-    valid_meta_payload["n_queries"] = 0
+    payload = dict(valid_meta_payload)
+    payload["n_queries"] = 0
     with pytest.raises(ValidationError):
-        SyntheticQueriesMeta.model_validate(valid_meta_payload)
+        SyntheticQueriesMeta.model_validate(payload)
 
 
 def test_synthetic_queries_meta_rejects_extra_keys(valid_meta_payload: dict[str, object]) -> None:

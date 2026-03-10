@@ -1,8 +1,15 @@
 """Output contract for synthetic query generation."""
 
 from datetime import datetime
+from typing import Annotated
 
-from pydantic import BaseModel, ConfigDict, PositiveInt, field_validator
+from pydantic import BaseModel, ConfigDict, PositiveInt, StringConstraints
+
+
+NonEmptyStr = Annotated[
+    str,
+    StringConstraints(strip_whitespace=True, min_length=1),
+]
 
 
 class SyntheticQueryRow(BaseModel):
@@ -10,8 +17,8 @@ class SyntheticQueryRow(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    query_id: str
-    query: str
+    query_id: NonEmptyStr
+    query: NonEmptyStr
     domain: str | None = None
     role: str | None = None
     language: str | None = None
@@ -20,35 +27,6 @@ class SyntheticQueryRow(BaseModel):
     task: str | None = None
     difficulty: str | None = None
     format: str | None = None
-
-    @field_validator("query_id", "query")
-    @classmethod
-    def required_strings_non_empty(cls, v: str) -> str:
-        """Reject blank required string fields."""
-        v = v.strip()
-        if not v:
-            raise ValueError("value must be a non-empty string")
-        return v
-
-    @field_validator(
-        "domain",
-        "role",
-        "language",
-        "topic",
-        "intent",
-        "task",
-        "difficulty",
-        "format",
-    )
-    @classmethod
-    def optional_strings_non_empty_if_present(cls, v: str | None) -> str | None:
-        """Reject blank optional string fields when provided."""
-        if v is None:
-            return None
-        v = v.strip()
-        if not v:
-            raise ValueError("optional metadata values must be non-empty strings")
-        return v
 
 
 class SyntheticQueriesMeta(BaseModel):
@@ -61,12 +39,3 @@ class SyntheticQueriesMeta(BaseModel):
     n_queries: PositiveInt
     model_provider: str
     model: str
-
-    @field_validator("run_id", "model_provider", "model")
-    @classmethod
-    def metadata_strings_non_empty(cls, v: str) -> str:
-        """Reject blank metadata string fields."""
-        v = v.strip()
-        if not v:
-            raise ValueError("value must be a non-empty string")
-        return v
