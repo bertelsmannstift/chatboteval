@@ -6,13 +6,12 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from chatboteval.core.schemas import (
+from chatboteval.core.csv_io import read_csv, write_csv
+from chatboteval.core.schemas.annotation_export import (
     GenerationAnnotation,
     GroundingAnnotation,
     RetrievalAnnotation,
     Task,
-    read_csv,
-    write_csv,
 )
 
 _DT = datetime(2024, 6, 1, 10, 0, 0, tzinfo=timezone.utc)

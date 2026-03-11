@@ -1,12 +1,23 @@
 """Boundary schemas for annotation export records (one per task type)."""
 
 from datetime import datetime
+from enum import StrEnum
 
-from chatboteval.core.schemas.base import ContractModel, Task
+from pydantic import BaseModel, ConfigDict
 
 
-class AnnotationBase(ContractModel):
+class Task(StrEnum):
+    """Annotation task types."""
+
+    RETRIEVAL = "retrieval"
+    GROUNDING = "grounding"
+    GENERATION = "generation"
+
+
+class AnnotationBase(BaseModel):
     """Base fields shared across annotation exports."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
     record_uuid: str
     annotator_id: str

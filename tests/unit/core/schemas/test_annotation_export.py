@@ -9,10 +9,33 @@ from chatboteval.core.schemas.annotation_export import (
     GenerationAnnotation,
     GroundingAnnotation,
     RetrievalAnnotation,
+    Task,
 )
-from chatboteval.core.schemas.base import Task
 
 NOW = datetime.now(tz=timezone.utc)
+
+
+def test_task_values():
+    """Task enum members have expected string values."""
+    assert Task.RETRIEVAL == "retrieval"
+    assert Task.GROUNDING == "grounding"
+    assert Task.GENERATION == "generation"
+
+
+def test_task_from_string():
+    """Task can be constructed from its string value."""
+    assert Task("retrieval") is Task.RETRIEVAL
+
+
+def test_task_invalid_raises():
+    """Invalid string raises ValueError."""
+    with pytest.raises(ValueError):
+        Task("invalid")
+
+
+def test_task_has_three_members():
+    """Task enum has exactly three members."""
+    assert len(list(Task)) == 3
 
 
 @pytest.fixture()

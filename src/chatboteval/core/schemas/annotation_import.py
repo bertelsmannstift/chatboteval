@@ -1,8 +1,6 @@
 """Boundary schemas for canonical annotation import records."""
 
-from pydantic import Field, field_validator
-
-from chatboteval.core.schemas.base import ContractModel
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 def _non_empty(v: str) -> str:
@@ -12,8 +10,10 @@ def _non_empty(v: str) -> str:
     return v
 
 
-class Chunk(ContractModel):
+class Chunk(BaseModel):
     """Single retrieved chunk within a query-response pair."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
     chunk_id: str
     doc_id: str
@@ -26,8 +26,10 @@ class Chunk(ContractModel):
         return _non_empty(v)
 
 
-class QueryResponsePair(ContractModel):
+class QueryResponsePair(BaseModel):
     """Canonical import record pairing a query with its response and chunks."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
     query: str
     answer: str
