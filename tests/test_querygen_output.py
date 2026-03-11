@@ -33,7 +33,8 @@ def valid_meta_payload() -> dict[str, object]:
         "created_at": "2026-03-09T10:30:00Z",
         "n_queries": 25,
         "model_provider": "openai",
-        "model": "gpt-4.1-mini",
+        "planning_model": "gpt-4.1-mini",
+        "realization_model": "gpt-4.1-mini",
     }
 
 
@@ -100,6 +101,9 @@ def test_synthetic_queries_meta_accepts_valid_payload(valid_meta_payload: dict[s
     assert meta.run_id == "run_20260309_001"
     assert meta.created_at == datetime(2026, 3, 9, 10, 30, tzinfo=timezone.utc)
     assert meta.n_queries == 25
+    assert meta.model_provider == "openai"
+    assert meta.planning_model == "gpt-4.1-mini"
+    assert meta.realization_model == "gpt-4.1-mini"
 
 
 def test_synthetic_queries_meta_rejects_non_positive_n_queries(valid_meta_payload: dict[str, object]) -> None:

@@ -12,7 +12,7 @@ NonEmptyStr = Annotated[
 
 
 class SyntheticQueryRow(BaseModel):
-    """Schema for one synthetic query CSV row."""
+    """Schema for one synthetic query."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -37,4 +37,5 @@ class SyntheticQueriesMeta(BaseModel):
     created_at: datetime
     n_queries: PositiveInt
     model_provider: str
-    model: str
+    planning_model: str
+    realization_model: str
