@@ -12,27 +12,14 @@ Tooling choices underpinning this layer (Pydantic @ boundaries, dataclasses for 
 ## Contract scaffold
 
 ```
-src/chatboteval/
-├── core/
-│   ├── schemas/                   # Boundary schemas (Pydantic SSOT)
-│   │   ├── __init__.py
-│   │   ├── base.py                # Shared StrEnums and common types
-│   │   ├── csv_io.py              # CSV serialisation helpers
-│   │   └── <tool>_*.py            # e.g. querygen_input, querygen_output,
-│   │                              #      querygen_plan, querygen_realize
-│   ├── types/                     # Runtime types (frozen dataclasses)
-│   │   └── __init__.py
-│   ├── settings/
-│   │   ├── settings_base.py       # ResolvableSettings base, secrets helpers
-│   │   └── <tool>_settings.py
-│   └── paths/                     # Workspace path resolution
-│       ├── paths.py               # WorkspacePaths (shared spine)
-│       └── <tool>_paths.py        # Tool-specific path bundles
-├── api/
-│   └── <tool>.py                  # Entrypoint: resolve(), path init
-└── cli/
-    └── commands/
+src/chatboteval/core/
+├── schemas/          # Boundary schemas (Pydantic SSOT)
+├── types/            # Runtime types (dataclasses)
+├── settings/         # Per-tool settings + shared resolution base
+└── paths/            # Workspace path resolution
+```
 
+```
 <base_dir>/                        # defaults to cwd
   <tool>/
     runs/
@@ -55,7 +42,7 @@ Pydantic models in `core/schemas/` — the single source of truth for all inter-
 
 Per-tool schemas are organised by tool prefix (e.g. `querygen_input.py`, `querygen_output.py`, `querygen_plan.py`, `querygen_realize.py`).
 
-All schema models are frozen by default (`model_config = ConfigDict(frozen=True)`). Schema changes are breaking changes requiring version bumps.
+Boundary schema models are frozen by default (`model_config = ConfigDict(frozen=True)`). Schema changes should be treated as potentially breaking.
 
 ### LLM-boundary schemas
 
@@ -72,7 +59,7 @@ Schemas that double as LLM structured output contracts follow additional convent
 
 > On-disk formats — downstream of the Pydantic schemas above.
 
-`core/schemas/csv_io.py` handles tabular serialisation/deserialisation. This section documents only the differences between the in-memory schema and the on-disk representation.
+Shared CSV serialisation/deserialisation helpers live in `core/` (whereas `core/schemas/` contains contract definitions only). This section documents only the differences between the in-memory schema and the on-disk representation.
 
 ### Tabular data (CSV)
 
@@ -120,17 +107,9 @@ Canonical locations for data artefacts produced and consumed by the pipeline (no
   config.yaml                     # user config (optional — see Section 5)
 ```
 
-A `WorkspacePaths` frozen dataclass in `core/paths/paths.py` exposes the shared workspace spine. Initialised once at the API/CLI entrypoint and threaded down — consuming code uses the resolver rather than constructing paths directly (single resolution point, easy to override in tests).
+A shared workspace path resolver in `core/paths/` provides deterministic construction of workspace root, tool root, and run root paths. Initialised once at the API/CLI entrypoint and threaded down — consuming code uses the resolver rather than constructing paths directly (single resolution point, easy to override in tests).
 
-Key API:
-
-- `WorkspacePaths.from_base_dir(path)` — normalises and resolves the workspace root
-- `tool_root(tool)` — returns `base_dir / tool`
-- `run_root(tool, run_id)` — returns `base_dir / tool / runs / run_id`
-- `under_base(path)` — resolves a path relative to `base_dir`
-- `coerce_path(str | Path)` — standalone helper for input normalisation
-
-Tool-specific path bundles (e.g. `QueryGenRunPaths` in `core/paths/querygen_paths.py`) are optional frozen dataclasses that pre-resolve all artefact paths for a run. A `resolve_<tool>_paths()` function constructs the bundle from `WorkspacePaths`. Tools with simple output structures can use `WorkspacePaths` directly.
+Tools with complex output structures may define their own path bundles that build on the shared resolver.
 
 
 ---
@@ -164,9 +143,7 @@ Each tool has a settings module in `core/settings/` containing:
 - **Semantically scoped settings classes** for logical groupings (e.g. `LlmSettings` for model config)
 - **A `RunSettings` class** that bundles the above plus run-level fields and inherits from `ResolvableSettings`
 
-`ResolvableSettings` in `core/settings/settings_base.py` is a Pydantic `BaseModel` (not `BaseSettings`) providing a `resolve()` classmethod that handles the precedence merge. Merge uses an `UNSET` sentinel to distinguish "not provided" from explicit values, with `deep_merge()` for recursive dict merging and `prune_unset()` to strip sentinel values. Each tool's `RunSettings` inherits this — no reimplementation per tool.
-
-The API entrypoint (`api/<tool>.py`) calls `RunSettings.resolve()` with caller-supplied overrides and config, then passes the resolved settings to the implementation layer.
+A shared base in `core/settings/` provides deterministic precedence resolution. Each tool's settings bundle inherits this — no reimplementation per tool. The API entrypoint resolves settings and passes them to the implementation layer.
 
 
 ---

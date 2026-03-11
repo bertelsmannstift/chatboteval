@@ -6,7 +6,7 @@ Status: Draft
 
 The `core/` contract layer uses following tooling choices:
 
-**Pydantic for boundary schemas only** — input specs, LLM-structured outputs, and disk artifacts (CSV/JSON) are defined as Pydantic models in `core/schemas/`. These are SSOT for all inter-module contracts. Dataclasses are used for runtime in-memory objects, where validation and serialisation are not needed.
+**Pydantic primarily for boundary schemas** — input specs, LLM-structured outputs, and disk artifacts (CSV/JSON) are defined as Pydantic models in `core/schemas/`. Settings models also use Pydantic. Dataclasses are used for runtime in-memory objects, where validation and serialisation are not needed.
 
 **Rationale:** 
 - Pydantic at boundaries gives free validation, serialisation (`model_dump_json()`/`model_dump()`), and schema generation (i.e. where those properties matter). 
@@ -16,20 +16,19 @@ The `core/` contract layer uses following tooling choices:
 
 **Contract types over raw dicts** for all inter-module data exchange. Schema changes are breaking changes.
 
-**No business logic in the contract layer** — types, schemas, and config only. `core/` is the root of the dependency graph; it must not import from any other internal modules (e.g. `api/` or `cli/`).
+**No business logic in the schema layer** — `core/schemas/` contains types and contracts only. It is the root of the dependency graph and must not import from any other internal modules. Other `core/` subpackages (settings, paths) may contain implementation logic but still must not import from `api/` or `cli/`.
 
-**Dependency direction:** `core/ ← api/ ← cli/` (per [ADR-0007](0007-packaging-invocation-surface.md)). The top-level chatboteval namespace re-exports contract types so users get typed interfaces without knowing internal structure.
+**Dependency direction:** `core/ ← api/ ← cli/` (per [ADR-0007](0007-packaging-invocation-surface.md)).
 
 **`StrEnum` for controlled vocabularies** — `Task` and other fixed enumerations. (i) catches typos at import time, (ii) enables IDE autocomplete, (iii) centralises renaming.
 
 **CSV for all data exchange** (-> the `context_set` column uses JSON-serialised array). One format everywhere; the column is machine-consumed so readability is not a concern.
 
-**Frozen models by default** — both Pydantic schema models and runtime dataclasses are frozen; prevents accidental mutation mid-pipeline.
-    - These are final results, not accumulators. Nothing in pipeline mutates them post construction (records flow through as Pydantic schema objects, and runtime type is just a summary of what happened).
+**Frozen boundary schemas** — Pydantic models in `core/schemas/` are frozen (`frozen=True`); these are contracts, not accumulators, and mutation post-construction is a bug. Runtime dataclasses may use frozen on a case-by-case basis.
 
 **No per-file schema versioning.** Schema version is implicit from the package version. Pydantic validation at load time is the mismatch signal for CSV files.
 
-**Per-tool settings files** — each tool has its own settings module in `core/settings/` (e.g. `querygen_settings.py`), with semantically scoped settings classes (e.g. `LlmSettings`, `QueryGenSpec`) bundled into a tool-level `RunSettings` class. A shared `ResolveSettings` base class in `core/settings/settings_base.py` provides the `resolve()` classmethod, which handles config precedence (overrides > env > config file > defaults) without reimplementing the merge logic per tool.
+**Per-tool settings with shared resolution** — each tool defines its own settings bundle with semantically scoped groups. A shared base provides deterministic precedence resolution (overrides > env > config file > defaults) so tools don't reimplement merge logic.
 
 
 > ## Alternatives considered
@@ -45,6 +44,6 @@ The `core/` contract layer uses following tooling choices:
 
 - Pydantic becomes a core dependency (already required for Argilla integration)
 - `core/schemas/` is the definitive contract definition — contributors look there first
-- Schema changes in `core/schemas/` are breaking changes requiring version bumps
+- Schema changes in `core/schemas/` should be treated as potentially breaking and handled with care
 - Runtime types (dataclasses) are free to evolve without triggering breaking-change discipline
 - `core/` must remain free of business logic to preserve its role as dependency root
