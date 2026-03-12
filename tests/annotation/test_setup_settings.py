@@ -1,9 +1,9 @@
 """Unit tests for AnnotationSetupSettings and UserSpec."""
 
 import pytest
-from chatboteval.annotation.settings import AnnotationSetupSettings, UserSpec
 from pydantic import ValidationError
 
+from chatboteval.annotation.settings import AnnotationSetupSettings, UserSpec
 from chatboteval.core.schemas.annotation_task import Task
 
 
