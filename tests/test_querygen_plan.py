@@ -153,3 +153,19 @@ def test_query_blueprint_list_fields_define_descriptions() -> None:
     for field in QueryBlueprintList.model_fields.values():
         assert field.description
         assert field.description.strip()
+
+
+def test_query_blueprint_rejects_missing_required_field(
+    base_payload: dict[str, object],
+) -> None:
+    """Schema rejects payloads missing a required field."""
+    payload = dict(base_payload)
+    payload.pop("candidate_id")
+
+    with pytest.raises(ValidationError) as exc_info:
+        QueryBlueprint.model_validate(payload)
+
+    errors = exc_info.value.errors()
+    assert len(errors) == 1
+    assert errors[0]["loc"] == ("candidate_id",)
+    assert errors[0]["type"] == "missing"
