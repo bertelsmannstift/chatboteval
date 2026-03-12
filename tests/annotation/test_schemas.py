@@ -1,6 +1,7 @@
 """Unit tests for Argilla dataset schema constants."""
 
 import argilla as rg
+
 from chatboteval.annotation.schemas import (
     DATASET_NAMES,
     TASK1_RETRIEVAL_SETTINGS,
@@ -8,7 +9,6 @@ from chatboteval.annotation.schemas import (
     TASK3_GENERATION_SETTINGS,
     TASK_SETTINGS,
 )
-
 from chatboteval.core.schemas.annotation_task import Task
 
 
@@ -46,7 +46,7 @@ class TestTask1RetrievalSettings:
 
     def test_customfield_has_details_summary(self):
         field = _get_field(TASK1_RETRIEVAL_SETTINGS, "generated_answer")
-        assert "<details>" in field.template
+        assert "<details" in field.template
         assert "<summary>" in field.template
 
     def test_questions(self):
@@ -94,7 +94,7 @@ class TestTask2GroundingSettings:
 
     def test_customfield_has_details_summary(self):
         field = _get_field(TASK2_GROUNDING_SETTINGS, "query")
-        assert "<details>" in field.template
+        assert "<details" in field.template
         assert "<summary>" in field.template
 
     def test_questions(self):
@@ -153,7 +153,7 @@ class TestTask3GenerationSettings:
 
     def test_customfield_has_details_summary(self):
         field = _get_field(TASK3_GENERATION_SETTINGS, "context_set")
-        assert "<details>" in field.template
+        assert "<details" in field.template
         assert "<summary>" in field.template
 
     def test_questions(self):
