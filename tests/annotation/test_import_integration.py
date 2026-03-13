@@ -121,7 +121,12 @@ def test_record_uuid_linkage(client: rg.Argilla, sample_pairs: list[QueryRespons
 
 @pytest.mark.integration
 def test_idempotent_reimport(client: rg.Argilla, sample_pairs: list[QueryResponsePair]) -> None:
-    """Calling import_records twice with same data produces same record count."""
+    """Calling import_records twice with same data produces same record count.
+
+    Idempotency relies on deterministic Record.id values derived from content hashes
+    (_derive_record_uuid). Argilla upserts on Record.id, so identical IDs on the second
+    import overwrite existing records rather than creating duplicates.
+    """
     import_records(client, sample_pairs, settings=_SETTINGS)
     import_records(client, sample_pairs, settings=_SETTINGS)
 
