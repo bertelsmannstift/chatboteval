@@ -1,5 +1,20 @@
 """Public annotation namespace — re-exports from internal modules."""
 
+from chatboteval.api.annotation_import import (
+    ImportResult as ImportResult,
+)
+from chatboteval.api.annotation_import import (
+    RecordError as RecordError,
+)
+from chatboteval.api.annotation_import import (
+    ValidationResult as ValidationResult,
+)
+from chatboteval.api.annotation_import import (
+    import_records as import_records,
+)
+from chatboteval.api.annotation_import import (
+    validate_records as validate_records,
+)
 from chatboteval.api.annotation_setup import (
     SetupResult as SetupResult,
 )
@@ -29,6 +44,12 @@ from chatboteval.api.annotation_task_config import (
 )
 from chatboteval.api.annotation_task_config import (
     TASK_SETTINGS as TASK_SETTINGS,
+)
+from chatboteval.core.schemas.annotation_import import (
+    Chunk as Chunk,
+)
+from chatboteval.core.schemas.annotation_import import (
+    QueryResponsePair as QueryResponsePair,
 )
 from chatboteval.core.settings.annotation_settings import (
     AnnotationSettings as AnnotationSettings,
