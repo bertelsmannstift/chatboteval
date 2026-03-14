@@ -134,6 +134,7 @@ def setup_datasets(
             task_settings = rg.Settings(
                 fields=base_settings.fields,
                 questions=base_settings.questions,
+                metadata=base_settings.metadata,
                 guidelines=base_settings.guidelines,
                 distribution=rg.TaskDistribution(min_submitted=settings.min_submitted),
             )
