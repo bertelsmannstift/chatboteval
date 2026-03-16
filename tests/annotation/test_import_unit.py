@@ -5,7 +5,7 @@ No Argilla server required. Tests exercise pure Python logic only.
 
 import argilla as rg
 
-from chatboteval.core.annotation.import_ import (
+from chatboteval.core.annotation.record_builder import (
     build_generation_record,
     build_grounding_record,
     build_retrieval_records,
