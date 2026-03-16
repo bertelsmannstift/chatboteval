@@ -1,10 +1,9 @@
 """Hardcoded Argilla dataset definitions for the three annotation tasks.
 
-These are Argilla rg.Settings objects — runtime task definitions, NOT boundary
+These are Argilla rg.Settings objects - runtime task definitions, NOT boundary
 schemas (those live in core/schemas/) or configurable settings (those live in
 core/settings/). They encode the annotation protocol (fields, questions, labels)
-and are hardcoded per ADR-0009: any change requires a new ADR + major version
-bump.
+and are hardcoded per ADR-0009.
 
 Distribution (min_submitted) is intentionally omitted — it is an operational
 setting controlled by AnnotationSettings.min_submitted and applied at
