@@ -113,7 +113,7 @@ Three Argilla datasets, each receiving records from every import:
 **Fields (shown to annotators):**
 - `query` ← canonical `query`
 - `chunk` ← canonical `chunks[k].text`
-- `answer` ← canonical `answer` (supporting context — positioned last per [Annotation Interface §Visibility contract](annotation-interface.md))
+- `generated_answer` ← canonical `answer` (supporting context, collapsible — per [Annotation Interface §Visibility contract](annotation-interface.md))
 
 **Metadata (stored, not shown):**
 - `record_uuid` — assigned at import; links same query across all three datasets
@@ -127,9 +127,9 @@ Three Argilla datasets, each receiving records from every import:
 ### `task_grounding` — one record per answer-context set pair
 
 **Fields (shown to annotators):**
-- `query` ← canonical `query`
 - `answer` ← canonical `answer`
 - `context_set` ← canonical `context_set`
+- `query` ← canonical `query` (supporting context, collapsible)
 
 **Metadata (stored, not shown):**
 - `record_uuid`
@@ -142,6 +142,7 @@ Three Argilla datasets, each receiving records from every import:
 **Fields (shown to annotators):**
 - `query` ← canonical `query`
 - `answer` ← canonical `answer`
+- `context_set` ← canonical `context_set` (supporting context, collapsible)
 
 **Metadata (stored, not shown):**
 - `record_uuid`
