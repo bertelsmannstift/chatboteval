@@ -9,6 +9,7 @@ import hashlib
 import logging
 
 import argilla as rg
+from argilla.records._dataset_records import RecordErrorHandling  # no public import path in argilla v2
 
 from chatboteval.core.annotation.argilla_ops import apply_prefix
 from chatboteval.core.annotation.argilla_settings import DATASET_NAMES
@@ -128,7 +129,7 @@ def fan_out_records(
         if dataset is None:
             raise RuntimeError(f"Dataset {ds_name!r} in workspace {ws_name!r} not found. Run setup() first.")
 
-        dataset.records.log(rg_records, on_error="warn")
+        dataset.records.log(rg_records, on_error=RecordErrorHandling.WARN)
         dataset_counts[ds_name] = len(rg_records)
         logger.info("Logged %d records to dataset %r", len(rg_records), ds_name)
 
