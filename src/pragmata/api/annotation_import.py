@@ -7,6 +7,7 @@ Public API:
 
 from dataclasses import dataclass
 from pathlib import Path
+from typing import cast
 
 import argilla as rg
 
@@ -98,7 +99,7 @@ def import_records(
         ImportResult with total/imported/skipped counts and per-dataset breakdown.
     """
     settings = AnnotationSettings.resolve(
-        config=load_config_file(config_path) if config_path is not UNSET else None,
+        config=load_config_file(cast("str | Path", config_path)) if config_path is not UNSET else None,
         overrides={"workspace_prefix": workspace_prefix},
     )
     dataset_counts = fan_out_records(client, records, settings)

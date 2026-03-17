@@ -6,6 +6,7 @@ Public API:
 """
 
 from pathlib import Path
+from typing import cast
 
 import argilla as rg
 
@@ -42,7 +43,7 @@ def setup(
         SetupResult tracking created/skipped workspaces, datasets, and users.
     """
     settings = AnnotationSettings.resolve(
-        config=load_config_file(config_path) if config_path is not UNSET else None,
+        config=load_config_file(cast("str | Path", config_path)) if config_path is not UNSET else None,
         overrides={
             "workspace_prefix": workspace_prefix,
             "min_submitted": min_submitted,
@@ -71,7 +72,7 @@ def teardown(
         config_path: Path to YAML config file for settings resolution.
     """
     settings = AnnotationSettings.resolve(
-        config=load_config_file(config_path) if config_path is not UNSET else None,
+        config=load_config_file(cast("str | Path", config_path)) if config_path is not UNSET else None,
         overrides={"workspace_prefix": workspace_prefix},
     )
     teardown_resources(client, settings)
