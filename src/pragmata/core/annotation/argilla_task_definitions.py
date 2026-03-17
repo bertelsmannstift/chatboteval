@@ -43,9 +43,7 @@ def build_task_settings() -> dict[Task, rg.Settings]:
     Deferred construction — call after an Argilla client is connected
     (or with a mock client in tests). Cached after first call.
     """
-    template_text = (
-        files("pragmata.core.annotation").joinpath("collapsible_field.html").read_text(encoding="utf-8")
-    )
+    template_text = files("pragmata.core.annotation").joinpath("collapsible_field.html").read_text(encoding="utf-8")
 
     return {
         Task.RETRIEVAL: rg.Settings(
