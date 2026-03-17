@@ -18,7 +18,19 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class SetupResult:
-    """Tracks resources created and skipped during a setup or provision call."""
+    """Tracks resources created and skipped during a setup or provision call.
+
+    Attributes:
+        created_workspaces: Names of newly created workspaces.
+        skipped_workspaces: Names of workspaces that already existed.
+        created_datasets: Names of newly created datasets.
+        skipped_datasets: Names of datasets that already existed.
+        created_users: Usernames of newly created accounts.
+        skipped_users: Usernames of accounts that already existed.
+        generated_passwords: Mapping of username to auto-generated password
+            for newly created accounts (only present when no password was
+            supplied in the UserSpec).
+    """
 
     created_workspaces: list[str] = field(default_factory=list)
     skipped_workspaces: list[str] = field(default_factory=list)

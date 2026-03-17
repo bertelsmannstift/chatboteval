@@ -39,7 +39,14 @@ class ValidationResult:
 
 @dataclass(frozen=True)
 class ImportResult:
-    """Outcome of import_records(): counts per dataset and overall totals."""
+    """Outcome of import_records(): counts per dataset and overall totals.
+
+    Attributes:
+        total_records: Number of QueryResponsePair inputs received.
+        imported_records: Number successfully written to Argilla.
+        skipped_records: Number skipped (e.g. duplicates).
+        dataset_counts: Records written per dataset name.
+    """
 
     total_records: int
     imported_records: int
