@@ -42,15 +42,11 @@ class ImportResult:
     """Outcome of import_records(): counts per dataset and overall totals.
 
     Attributes:
-        total_records: Number of QueryResponsePair inputs received.
-        imported_records: Number successfully written to Argilla.
-        skipped_records: Number skipped (e.g. duplicates).
-        dataset_counts: Records written per dataset name.
+        total_records: Number of QueryResponsePair inputs submitted.
+        dataset_counts: Records submitted per dataset name.
     """
 
     total_records: int
-    imported_records: int
-    skipped_records: int
     dataset_counts: dict[str, int]
 
 
@@ -113,7 +109,5 @@ def import_records(
     total = len(records)
     return ImportResult(
         total_records=total,
-        imported_records=total,
-        skipped_records=0,
         dataset_counts=dataset_counts,
     )

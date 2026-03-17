@@ -72,7 +72,6 @@ def test_record_counts_per_dataset(client: rg.Argilla, sample_pairs: list[QueryR
     result = import_records(client, sample_pairs, workspace_prefix=_PREFIX)
 
     assert result.total_records == n_pairs
-    assert result.imported_records == n_pairs
 
     ret_ds_name = f"{_PREFIX}_task_retrieval"
     gnd_ds_name = f"{_PREFIX}_task_grounding"
