@@ -6,8 +6,8 @@ from uuid import uuid4
 
 from pydantic import BaseModel, ConfigDict, Field, PositiveInt
 
-from chatboteval.core.schemas.querygen_input import QueryGenSpec
-from chatboteval.core.settings.settings_base import ResolveSettings
+from pragmata.core.schemas.querygen_input import QueryGenSpec
+from pragmata.core.settings.settings_base import ResolveSettings
 
 
 class LlmSettings(BaseModel):

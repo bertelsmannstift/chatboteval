@@ -3,7 +3,7 @@
 from pathlib import Path
 from typing import Any
 
-from chatboteval.core.settings.querygen_settings import LlmSettings, QueryGenRunSettings
+from pragmata.core.settings.querygen_settings import LlmSettings, QueryGenRunSettings
 
 
 def valid_spec_payload() -> dict[str, Any]:
