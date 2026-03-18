@@ -12,14 +12,11 @@ from pragmata.api.annotation_setup import (
 from pragmata.api.annotation_setup import (
     teardown as teardown,
 )
+from pragmata.core.annotation.record_builder import (
+    RecordError as RecordError,
+)
 from pragmata.core.annotation.setup import (
     SetupResult as SetupResult,
-)
-from pragmata.core.schemas.annotation_import import (
-    Chunk as Chunk,
-)
-from pragmata.core.schemas.annotation_import import (
-    QueryResponsePair as QueryResponsePair,
 )
 from pragmata.core.settings.annotation_settings import (
     UserSpec as UserSpec,

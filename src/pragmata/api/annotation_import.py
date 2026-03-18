@@ -4,14 +4,17 @@ Public API:
     import_records(client, records, *, workspace_prefix=UNSET, ...) -> ImportResult
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import cast
 
 import argilla as rg
 
-from pragmata.core.annotation.record_builder import fan_out_records
-from pragmata.core.schemas.annotation_import import QueryResponsePair
+from pragmata.core.annotation.record_builder import (
+    RecordError,
+    fan_out_records,
+    validate_records,
+)
 from pragmata.core.settings.annotation_settings import AnnotationSettings
 from pragmata.core.settings.settings_base import UNSET, load_config_file
 
@@ -22,15 +25,17 @@ from pragmata.core.settings.settings_base import UNSET, load_config_file
 
 @dataclass(frozen=True)
 class ImportResult:
-    """Outcome of import_records(): counts per dataset and overall totals.
+    """Outcome of import_records(): counts per dataset and validation errors.
 
     Attributes:
-        total_records: Number of QueryResponsePair inputs submitted.
+        total_records: Number of raw dicts received as input.
         dataset_counts: Records submitted per dataset name.
+        errors: Per-record validation failures (index + detail).
     """
 
     total_records: int
     dataset_counts: dict[str, int]
+    errors: list[RecordError] = field(default_factory=list)
 
 
 # ---------------------------------------------------------------------------
@@ -40,35 +45,39 @@ class ImportResult:
 
 def import_records(
     client: rg.Argilla,
-    records: list[QueryResponsePair],
+    records: list[dict],
     *,
     workspace_prefix: str | object = UNSET,
     config_path: str | Path | object = UNSET,
 ) -> ImportResult:
-    """Fan out validated records to the three Argilla annotation datasets.
+    """Validate and fan out records to the three Argilla annotation datasets.
 
-    Each QueryResponsePair produces records in retrieval (one per chunk),
-    grounding (one per pair), and generation (one per pair) datasets.
+    Raw dicts are validated against the canonical import schema. Valid
+    records produce entries in retrieval (one per chunk), grounding
+    (one per pair), and generation (one per pair) datasets. Validation
+    failures are collected in ImportResult.errors — invalid records are
+    skipped, not raised.
+
     Record IDs are derived from content hashes for idempotent upsert.
-
     Datasets must already exist (call setup() first).
 
     Args:
         client: Connected Argilla client instance.
-        records: Validated QueryResponsePair objects to import.
+        records: Raw dicts conforming to the canonical import schema.
         workspace_prefix: Prefix used when the environment was created.
         config_path: Path to YAML config file for settings resolution.
 
     Returns:
-        ImportResult with total/imported/skipped counts and per-dataset breakdown.
+        ImportResult with totals, per-dataset counts, and validation errors.
     """
     settings = AnnotationSettings.resolve(
         config=load_config_file(cast("str | Path", config_path)) if config_path is not UNSET else None,
         overrides={"workspace_prefix": workspace_prefix},
     )
-    dataset_counts = fan_out_records(client, records, settings)
-    total = len(records)
+    validation = validate_records(records)
+    dataset_counts = fan_out_records(client, validation.valid, settings)
     return ImportResult(
-        total_records=total,
+        total_records=len(records),
         dataset_counts=dataset_counts,
+        errors=validation.errors,
     )

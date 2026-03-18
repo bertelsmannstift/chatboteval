@@ -9,17 +9,16 @@ from unittest.mock import MagicMock, patch
 from pragmata.api.annotation_import import ImportResult, import_records
 from pragmata.api.annotation_setup import setup, teardown
 from pragmata.core.annotation.setup import SetupResult
-from pragmata.core.schemas.annotation_import import Chunk, QueryResponsePair
 from pragmata.core.settings.annotation_settings import AnnotationSettings, UserSpec
 
 
-def _make_pair() -> QueryResponsePair:
-    return QueryResponsePair(
-        query="What is X?",
-        answer="X is Y.",
-        chunks=[Chunk(chunk_id="c1", doc_id="d1", chunk_rank=1, text="Chunk text.")],
-        context_set="ctx-001",
-    )
+def _make_raw() -> dict:
+    return {
+        "query": "What is X?",
+        "answer": "X is Y.",
+        "chunks": [{"chunk_id": "c1", "doc_id": "d1", "chunk_rank": 1, "text": "Chunk text."}],
+        "context_set": "ctx-001",
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -133,13 +132,13 @@ class TestImportRecords:
     def test_delegates_to_core(self, mock_fan_out: MagicMock) -> None:
         mock_fan_out.return_value = {"ds1": 2}
         client = MagicMock()
-        pairs = [_make_pair()]
+        raw = [_make_raw()]
 
-        import_records(client, pairs, workspace_prefix="test")
+        import_records(client, raw, workspace_prefix="test")
 
         mock_fan_out.assert_called_once()
         assert client is mock_fan_out.call_args[0][0]
-        assert pairs is mock_fan_out.call_args[0][1]
+        assert len(mock_fan_out.call_args[0][1]) == 1
 
     @patch("pragmata.api.annotation_import.fan_out_records")
     def test_resolves_workspace_prefix(self, mock_fan_out: MagicMock) -> None:
@@ -155,13 +154,14 @@ class TestImportRecords:
     def test_returns_import_result(self, mock_fan_out: MagicMock) -> None:
         mock_fan_out.return_value = {"ds1": 3, "ds2": 1}
         client = MagicMock()
-        pairs = [_make_pair(), _make_pair()]
+        raw = [_make_raw(), _make_raw()]
 
-        result = import_records(client, pairs, workspace_prefix="test")
+        result = import_records(client, raw, workspace_prefix="test")
 
         assert isinstance(result, ImportResult)
         assert result.total_records == 2
         assert result.dataset_counts == {"ds1": 3, "ds2": 1}
+        assert result.errors == []
 
     @patch("pragmata.api.annotation_import.fan_out_records")
     def test_empty_records_returns_zero_totals(self, mock_fan_out: MagicMock) -> None:
@@ -172,3 +172,31 @@ class TestImportRecords:
 
         assert result.total_records == 0
         assert result.dataset_counts == {}
+        assert result.errors == []
+
+    @patch("pragmata.api.annotation_import.fan_out_records")
+    def test_validation_errors_reported(self, mock_fan_out: MagicMock) -> None:
+        mock_fan_out.return_value = {"ds1": 1}
+        client = MagicMock()
+        raw = [_make_raw(), {"query": "missing required fields"}]
+
+        result = import_records(client, raw, workspace_prefix="test")
+
+        assert result.total_records == 2
+        assert len(result.errors) == 1
+        assert result.errors[0].index == 1
+        # Only the valid record was passed to fan_out
+        assert len(mock_fan_out.call_args[0][1]) == 1
+
+    @patch("pragmata.api.annotation_import.fan_out_records")
+    def test_all_invalid_skips_fan_out(self, mock_fan_out: MagicMock) -> None:
+        mock_fan_out.return_value = {}
+        client = MagicMock()
+        raw = [{"bad": "data"}, {"also": "bad"}]
+
+        result = import_records(client, raw, workspace_prefix="test")
+
+        assert result.total_records == 2
+        assert len(result.errors) == 2
+        # fan_out called with empty list
+        assert mock_fan_out.call_args[0][1] == []
