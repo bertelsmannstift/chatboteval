@@ -35,7 +35,7 @@ class TestSetup:
         mock_users.return_value = SetupResult(created_users=["alice"])
         client = MagicMock()
 
-        result = setup(client, workspace_prefix="test")
+        setup(client, workspace_prefix="test")
 
         mock_ds.assert_called_once()
         mock_users.assert_called_once()
