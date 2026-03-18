@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 import pytest
 from pydantic import ValidationError
 
-from chatboteval.core.schemas.querygen_output import SyntheticQueriesMeta, SyntheticQueryRow
+from pragmata.core.schemas.querygen_output import SyntheticQueriesMeta, SyntheticQueryRow
 
 
 @pytest.fixture()

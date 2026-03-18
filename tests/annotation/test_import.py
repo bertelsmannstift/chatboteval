@@ -2,7 +2,7 @@
 
 
 def test_annotation_subpackage_importable() -> None:
-    """Annotation subpackage is importable after pip install chatboteval[annotation]."""
-    from chatboteval import annotation
+    """Annotation subpackage is importable after pip install pragmata[annotation]."""
+    from pragmata import annotation
 
     assert annotation is not None

@@ -4,7 +4,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, PositiveInt
 
-from chatboteval.core.types import NonEmptyStr
+from pragmata.core.types import NonEmptyStr
 
 
 class SyntheticQueryRow(BaseModel):

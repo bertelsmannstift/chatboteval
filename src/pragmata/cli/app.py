@@ -1,8 +1,8 @@
-"""Typer CLI application for chatboteval."""
+"""Typer CLI application for pragmata."""
 
 import typer
 
-from chatboteval.api import get_version
+from pragmata.api import get_version
 
 app = typer.Typer(add_completion=False)
 
@@ -13,11 +13,11 @@ def main(
     version: bool = typer.Option(
         False,
         "--version",
-        help="Print the installed chatboteval version and exit.",
+        help="Print the installed pragmata version and exit.",
         is_eager=True,
     ),
 ) -> None:
-    """Run the chatboteval CLI."""
+    """Run the pragmata CLI."""
     if version:
         typer.echo(get_version())
         raise typer.Exit(code=0)

@@ -1,1 +1,0 @@
-"""CLI package for chatboteval (thin wrapper around the public API)."""

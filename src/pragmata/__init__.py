@@ -1,4 +1,4 @@
-"""Top-level public interface for chatboteval.
+"""Top-level public interface for pragmata.
 
 Only curated, stable symbols should be exposed here.
 """

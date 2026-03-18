@@ -6,7 +6,7 @@ from typing import Any, NamedTuple
 import pytest
 from pydantic import BaseModel, ValidationError
 
-from chatboteval.core.settings.settings_base import (
+from pragmata.core.settings.settings_base import (
     UNSET,
     ResolveSettings,
     deep_merge,

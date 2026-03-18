@@ -6,7 +6,7 @@ import string
 
 import argilla as rg
 
-from chatboteval.core.settings.annotation_settings import UserSpec
+from pragmata.core.settings.annotation_settings import UserSpec
 
 logger = logging.getLogger(__name__)
 

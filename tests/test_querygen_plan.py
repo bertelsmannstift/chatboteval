@@ -3,7 +3,7 @@
 import pytest
 from pydantic import ValidationError
 
-from chatboteval.core.schemas.querygen_plan import QueryBlueprint, QueryBlueprintList
+from pragmata.core.schemas.querygen_plan import QueryBlueprint, QueryBlueprintList
 
 
 @pytest.fixture()

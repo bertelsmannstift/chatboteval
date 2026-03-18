@@ -5,7 +5,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict
 
-from chatboteval.core.schemas.annotation_task import Task
+from pragmata.core.schemas.annotation_task import Task
 
 
 class AnnotationBase(BaseModel):
