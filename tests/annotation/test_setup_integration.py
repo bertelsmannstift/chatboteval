@@ -7,13 +7,13 @@ Requires: make setup (Argilla stack running on localhost:6900)
 import argilla as rg
 import pytest
 
-from chatboteval.core.annotation.setup import (
+from pragmata.core.annotation.setup import (
     SetupResult,
     provision_users,
     setup_datasets,
     teardown_resources,
 )
-from chatboteval.core.settings.annotation_settings import AnnotationSettings, UserSpec
+from pragmata.core.settings.annotation_settings import AnnotationSettings, UserSpec
 
 _API_URL = "http://localhost:6900"
 _API_KEY = "argilla.apikey"

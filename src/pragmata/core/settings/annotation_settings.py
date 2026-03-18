@@ -3,8 +3,8 @@
 from dataclasses import dataclass, field
 from typing import Literal
 
-from chatboteval.core.schemas.annotation_task import Task
-from chatboteval.core.settings.settings_base import ResolveSettings
+from pragmata.core.schemas.annotation_task import Task
+from pragmata.core.settings.settings_base import ResolveSettings
 
 
 class AnnotationSettings(ResolveSettings):

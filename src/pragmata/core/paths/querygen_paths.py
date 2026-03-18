@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Self
 
-from chatboteval.core.paths.paths import WorkspacePaths
+from pragmata.core.paths.paths import WorkspacePaths
 
 
 @dataclass(frozen=True, slots=True)

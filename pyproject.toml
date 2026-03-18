@@ -1,5 +1,5 @@
 [project]
-name = "chatboteval"
+name = "pragmata"
 version = "0.0.1"
 description = "Evaluation framework and annotation interface for RAG chatbots"
 authors =[
@@ -25,10 +25,10 @@ type = [
     "types-PyYAML",
 ]
 annotation = ["argilla>=2.0,<3.0",]
-dev  = ["chatboteval[test,lint,type,annotation]"]
+dev  = ["pragmata[test,lint,type,annotation]"]
 
 [project.scripts]
-chatboteval = "chatboteval.cli.app:app"
+pragmata = "pragmata.cli.app:app"
 
 [build-system]
 requires = ["hatchling"]

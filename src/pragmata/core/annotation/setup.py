@@ -9,9 +9,9 @@ from dataclasses import dataclass, field
 
 import argilla as rg
 
-from chatboteval.core.annotation.argilla_ops import apply_prefix, create_dataset, create_user, create_workspace
-from chatboteval.core.annotation.argilla_settings import DATASET_NAMES, build_task_settings
-from chatboteval.core.settings.annotation_settings import AnnotationSettings, UserSpec
+from pragmata.core.annotation.argilla_ops import apply_prefix, create_dataset, create_user, create_workspace
+from pragmata.core.annotation.argilla_settings import DATASET_NAMES, build_task_settings
+from pragmata.core.settings.annotation_settings import AnnotationSettings, UserSpec
 
 logger = logging.getLogger(__name__)
 

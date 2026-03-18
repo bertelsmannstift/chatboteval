@@ -5,12 +5,12 @@ from datetime import datetime, timezone
 import pytest
 from pydantic import ValidationError
 
-from chatboteval.core.schemas.annotation_export import (
+from pragmata.core.schemas.annotation_export import (
     GenerationAnnotation,
     GroundingAnnotation,
     RetrievalAnnotation,
 )
-from chatboteval.core.schemas.annotation_task import Task
+from pragmata.core.schemas.annotation_task import Task
 
 NOW = datetime.now(tz=timezone.utc)
 

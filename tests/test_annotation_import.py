@@ -3,7 +3,7 @@
 import pytest
 from pydantic import ValidationError
 
-from chatboteval.core.schemas.annotation_import import Chunk, QueryResponsePair
+from pragmata.core.schemas.annotation_import import Chunk, QueryResponsePair
 
 
 @pytest.fixture()

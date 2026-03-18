@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from chatboteval.core.paths import WorkspacePaths
+from pragmata.core.paths import WorkspacePaths
 
 
 @pytest.fixture

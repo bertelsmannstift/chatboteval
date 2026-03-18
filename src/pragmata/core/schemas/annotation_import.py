@@ -2,7 +2,7 @@
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from chatboteval.core.types import NonEmptyStr
+from pragmata.core.types import NonEmptyStr
 
 
 class Chunk(BaseModel):

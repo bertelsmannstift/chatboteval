@@ -2,7 +2,7 @@
 
 import pytest
 
-from chatboteval.core.schemas.annotation_task import Task
+from pragmata.core.schemas.annotation_task import Task
 
 
 def test_task_values():

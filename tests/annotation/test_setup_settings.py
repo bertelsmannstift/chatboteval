@@ -3,8 +3,8 @@
 import pytest
 from pydantic import ValidationError
 
-from chatboteval.core.schemas.annotation_task import Task
-from chatboteval.core.settings.annotation_settings import AnnotationSettings, UserSpec
+from pragmata.core.schemas.annotation_task import Task
+from pragmata.core.settings.annotation_settings import AnnotationSettings, UserSpec
 
 
 class TestAnnotationSettingsDefaults:

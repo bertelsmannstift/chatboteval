@@ -4,7 +4,7 @@ import csv
 import typing
 from pathlib import Path
 
-from chatboteval.core.types import M
+from pragmata.core.types import M
 
 
 def _to_csv_value(v: object) -> str:

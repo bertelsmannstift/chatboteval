@@ -16,7 +16,7 @@ from string import Template
 
 import argilla as rg
 
-from chatboteval.core.schemas.annotation_task import Task
+from pragmata.core.schemas.annotation_task import Task
 
 _TEMPLATE_PATH = Path(__file__).parent / "collapsible_field.html"
 

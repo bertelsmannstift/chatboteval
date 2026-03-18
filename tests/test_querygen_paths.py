@@ -4,8 +4,8 @@ from pathlib import Path
 
 import pytest
 
-from chatboteval.core.paths.paths import WorkspacePaths
-from chatboteval.core.paths.querygen_paths import (
+from pragmata.core.paths.paths import WorkspacePaths
+from pragmata.core.paths.querygen_paths import (
     QueryGenRunPaths,
     resolve_querygen_paths,
 )

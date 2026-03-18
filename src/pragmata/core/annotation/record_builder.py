@@ -11,11 +11,11 @@ import logging
 import argilla as rg
 from argilla.records._dataset_records import RecordErrorHandling  # no public re-export in argilla v2; pinned to ==2.6.0
 
-from chatboteval.core.annotation.argilla_ops import apply_prefix
-from chatboteval.core.annotation.argilla_settings import DATASET_NAMES
-from chatboteval.core.schemas.annotation_import import QueryResponsePair
-from chatboteval.core.schemas.annotation_task import Task
-from chatboteval.core.settings.annotation_settings import AnnotationSettings
+from pragmata.core.annotation.argilla_ops import apply_prefix
+from pragmata.core.annotation.argilla_settings import DATASET_NAMES
+from pragmata.core.schemas.annotation_import import QueryResponsePair
+from pragmata.core.schemas.annotation_task import Task
+from pragmata.core.settings.annotation_settings import AnnotationSettings
 
 logger = logging.getLogger(__name__)
 

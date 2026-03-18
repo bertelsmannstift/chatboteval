@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 from pydantic import BaseModel, ConfigDict, ValidationError
 
-from chatboteval.core.csv_io import read_csv, write_csv
+from pragmata.core.csv_io import read_csv, write_csv
 
 _DT = datetime(2024, 6, 1, 10, 0, 0, tzinfo=timezone.utc)
 

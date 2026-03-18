@@ -2,11 +2,11 @@
 
 import argilla as rg
 
-from chatboteval.core.annotation.argilla_settings import (
+from pragmata.core.annotation.argilla_settings import (
     DATASET_NAMES,
     build_task_settings,
 )
-from chatboteval.core.schemas.annotation_task import Task
+from pragmata.core.schemas.annotation_task import Task
 
 _TASK_SETTINGS = build_task_settings()
 _RETRIEVAL = _TASK_SETTINGS[Task.RETRIEVAL]

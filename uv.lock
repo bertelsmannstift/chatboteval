@@ -243,54 +243,6 @@ wheels = [
 ]
 
 [[package]]
-name = "chatboteval"
-version = "0.0.1"
-source = { editable = "." }
-dependencies = [
-    { name = "pydantic" },
-    { name = "pyyaml" },
-    { name = "typer" },
-]
-
-[package.optional-dependencies]
-annotation = [
-    { name = "argilla" },
-]
-dev = [
-    { name = "argilla" },
-    { name = "mypy" },
-    { name = "pytest" },
-    { name = "ruff" },
-    { name = "types-pyyaml" },
-]
-lint = [
-    { name = "ruff" },
-]
-test = [
-    { name = "argilla" },
-    { name = "pytest" },
-]
-type = [
-    { name = "mypy" },
-    { name = "types-pyyaml" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "argilla", marker = "extra == 'annotation'", specifier = ">=2.0,<3.0" },
-    { name = "argilla", marker = "extra == 'test'", specifier = ">=2.0,<3.0" },
-    { name = "chatboteval", extras = ["test", "lint", "type", "annotation"], marker = "extra == 'dev'" },
-    { name = "mypy", marker = "extra == 'type'", specifier = ">=1.19" },
-    { name = "pydantic", specifier = ">=2.0,<3.0" },
-    { name = "pytest", marker = "extra == 'test'", specifier = ">=9.0" },
-    { name = "pyyaml", specifier = ">=6.0" },
-    { name = "ruff", marker = "extra == 'lint'", specifier = ">=0.14" },
-    { name = "typer", specifier = ">=0.9" },
-    { name = "types-pyyaml", marker = "extra == 'type'" },
-]
-provides-extras = ["test", "lint", "type", "annotation", "dev"]
-
-[[package]]
 name = "click"
 version = "8.3.1"
 source = { registry = "https://pypi.org/simple" }
@@ -1023,6 +975,54 @@ sdist = { url = "https://files.pythonhosted.org/packages/f9/e2/3e91f31a7d2b083fe
 wheels = [
     { url = "https://files.pythonhosted.org/packages/54/20/4d324d65cc6d9205fabedc306948156824eb9f0ee1633355a8f7ec5c66bf/pluggy-1.6.0-py3-none-any.whl", hash = "sha256:e920276dd6813095e9377c0bc5566d94c932c33b27a3e3945d8389c374dd4746", size = 20538, upload-time = "2025-05-15T12:30:06.134Z" },
 ]
+
+[[package]]
+name = "pragmata"
+version = "0.0.1"
+source = { editable = "." }
+dependencies = [
+    { name = "pydantic" },
+    { name = "pyyaml" },
+    { name = "typer" },
+]
+
+[package.optional-dependencies]
+annotation = [
+    { name = "argilla" },
+]
+dev = [
+    { name = "argilla" },
+    { name = "mypy" },
+    { name = "pytest" },
+    { name = "ruff" },
+    { name = "types-pyyaml" },
+]
+lint = [
+    { name = "ruff" },
+]
+test = [
+    { name = "argilla" },
+    { name = "pytest" },
+]
+type = [
+    { name = "mypy" },
+    { name = "types-pyyaml" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "argilla", marker = "extra == 'annotation'", specifier = ">=2.0,<3.0" },
+    { name = "argilla", marker = "extra == 'test'", specifier = ">=2.0,<3.0" },
+    { name = "mypy", marker = "extra == 'type'", specifier = ">=1.19" },
+    { name = "pragmata", extras = ["test", "lint", "type", "annotation"], marker = "extra == 'dev'" },
+    { name = "pydantic", specifier = ">=2.0,<3.0" },
+    { name = "pytest", marker = "extra == 'test'", specifier = ">=9.0" },
+    { name = "pyyaml", specifier = ">=6.0" },
+    { name = "ruff", marker = "extra == 'lint'", specifier = ">=0.14" },
+    { name = "typer", specifier = ">=0.9" },
+    { name = "types-pyyaml", marker = "extra == 'type'" },
+]
+provides-extras = ["test", "lint", "type", "annotation", "dev"]
 
 [[package]]
 name = "propcache"
