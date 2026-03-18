@@ -1,12 +1,13 @@
-"""Annotation import implementation — record building and fan-out logic.
+"""Annotation import implementation — validation, record building, and fan-out.
 
-Builds Argilla Record objects from canonical QueryResponsePair inputs and
-logs them to the appropriate datasets. The api/ layer resolves settings
-and delegates here.
+Validates raw dicts against the canonical schema, builds Argilla Record
+objects from typed QueryResponsePair inputs, and logs them to the
+appropriate datasets. The api/ layer resolves settings and delegates here.
 """
 
 import hashlib
 import logging
+from dataclasses import dataclass
 
 import argilla as rg
 from argilla.records._dataset_records import RecordErrorHandling  # no public re-export in argilla v2; pinned to ==2.6.0
@@ -18,6 +19,53 @@ from pragmata.core.schemas.annotation_task import Task
 from pragmata.core.settings.annotation_settings import AnnotationSettings
 
 logger = logging.getLogger(__name__)
+
+
+# ---------------------------------------------------------------------------
+# Validation
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class RecordError:
+    """Validation failure for a single input record."""
+
+    index: int
+    detail: str
+
+
+@dataclass(frozen=True)
+class ValidationResult:
+    """Outcome of validate_records(): typed pairs and per-index errors."""
+
+    valid: list[QueryResponsePair]
+    errors: list[RecordError]
+
+
+def validate_records(records: list[dict]) -> ValidationResult:
+    """Validate raw dicts against the canonical QueryResponsePair schema.
+
+    Pure validation — no Argilla I/O.
+
+    Args:
+        records: Raw dictionaries to validate against QueryResponsePair.
+
+    Returns:
+        ValidationResult with successfully parsed pairs and per-index errors.
+    """
+    valid: list[QueryResponsePair] = []
+    errors: list[RecordError] = []
+    for i, raw in enumerate(records):
+        try:
+            valid.append(QueryResponsePair.model_validate(raw))
+        except Exception as exc:
+            errors.append(RecordError(index=i, detail=str(exc)))
+    return ValidationResult(valid=valid, errors=errors)
+
+
+# ---------------------------------------------------------------------------
+# Record building
+# ---------------------------------------------------------------------------
 
 
 def derive_record_uuid(pair: QueryResponsePair) -> str:

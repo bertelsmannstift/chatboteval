@@ -18,7 +18,19 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class SetupResult:
-    """Tracks resources created and skipped during a setup or provision call."""
+    """Tracks resources created and skipped during a setup or provision call.
+
+    Attributes:
+        created_workspaces: Names of newly created workspaces.
+        skipped_workspaces: Names of workspaces that already existed.
+        created_datasets: Names of newly created datasets.
+        skipped_datasets: Names of datasets that already existed.
+        created_users: Usernames of newly created accounts.
+        skipped_users: Usernames of accounts that already existed.
+        generated_passwords: Mapping of username to auto-generated password
+            for newly created accounts (only present when no password was
+            supplied in the UserSpec).
+    """
 
     created_workspaces: list[str] = field(default_factory=list)
     skipped_workspaces: list[str] = field(default_factory=list)
@@ -27,6 +39,18 @@ class SetupResult:
     created_users: list[str] = field(default_factory=list)
     skipped_users: list[str] = field(default_factory=list)
     generated_passwords: dict[str, str] = field(default_factory=dict)
+
+    def merge(self, other: "SetupResult") -> "SetupResult":
+        """Combine two results (e.g. dataset setup + user provisioning)."""
+        return SetupResult(
+            created_workspaces=self.created_workspaces + other.created_workspaces,
+            skipped_workspaces=self.skipped_workspaces + other.skipped_workspaces,
+            created_datasets=self.created_datasets + other.created_datasets,
+            skipped_datasets=self.skipped_datasets + other.skipped_datasets,
+            created_users=self.created_users + other.created_users,
+            skipped_users=self.skipped_users + other.skipped_users,
+            generated_passwords={**self.generated_passwords, **other.generated_passwords},
+        )
 
 
 def setup_datasets(

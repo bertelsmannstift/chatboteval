@@ -26,7 +26,15 @@ class AnnotationSettings(ResolveSettings):
 
 @dataclass
 class UserSpec:
-    """Specification for provisioning an Argilla user account."""
+    """Specification for provisioning an Argilla user account.
+
+    Attributes:
+        username: Argilla login name.
+        role: Account role — ``"owner"`` or ``"annotator"``.
+        workspaces: Workspace base names to assign this user to.
+        password: Explicit password. If None, one is auto-generated and
+            returned in SetupResult.generated_passwords.
+    """
 
     username: str
     role: Literal["owner", "annotator"]
