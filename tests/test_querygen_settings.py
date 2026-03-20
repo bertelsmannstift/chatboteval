@@ -6,7 +6,7 @@ from typing import Any
 from pragmata.core.settings.querygen_settings import LlmSettings, QueryGenRunSettings
 
 
-def valid_spec_payload() -> dict[str, Any]:
+def _valid_spec_payload() -> dict[str, Any]:
     """Return a minimal valid QueryGenSpec payload."""
     return {
         "domain_context": {
@@ -37,7 +37,7 @@ def test_llm_settings_defaults() -> None:
 
 def test_querygen_run_settings_construction_with_defaults() -> None:
     """QueryGenRunSettings applies run-level defaults when spec is provided."""
-    settings = QueryGenRunSettings.model_validate({"spec": valid_spec_payload()})
+    settings = QueryGenRunSettings.model_validate({"spec": _valid_spec_payload()})
 
     assert settings.llm.model_provider == "mistralai"
     assert settings.llm.planning_model == "magistral-medium-latest"
@@ -52,7 +52,7 @@ def test_querygen_run_settings_resolve_deep_merges_nested_llm_settings() -> None
     """Resolve deep-merges nested settings layers for llm configuration."""
     resolved = QueryGenRunSettings.resolve(
         config={
-            "spec": valid_spec_payload(),
+            "spec": _valid_spec_payload(),
             "llm": {
                 "model_provider": "mistralai",
                 "model_kwargs": {
@@ -86,7 +86,7 @@ def test_querygen_run_settings_model_kwargs_merge_semantics() -> None:
     """Resolve preserves and overrides individual model_kwargs entries across layers."""
     resolved = QueryGenRunSettings.resolve(
         config={
-            "spec": valid_spec_payload(),
+            "spec": _valid_spec_payload(),
             "llm": {
                 "model_kwargs": {
                     "temperature": 0.2,
