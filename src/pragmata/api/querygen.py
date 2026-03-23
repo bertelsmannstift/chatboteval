@@ -1,10 +1,9 @@
 """API orchestration for the synthetic query generation workflow."""
 
-import os
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
-from pydantic import BaseModel
+from pydantic import BaseModel, PositiveInt
 
 from pragmata.core.paths.paths import WorkspacePaths
 from pragmata.core.paths.querygen_paths import QueryGenRunPaths, resolve_querygen_paths
@@ -32,12 +31,12 @@ def gen_queries(
     topics: str | list[str] | list[dict[str, object]] | object = UNSET,
     intents: str | list[str] | list[dict[str, object]] | object = UNSET,
     tasks: str | list[str] | list[dict[str, object]] | object = UNSET,
-    disallowed_topics: str | list[str] | list[dict[str, object]] | object = UNSET,
+    disallowed_topics: list[str] | object = UNSET,
     difficulty: str | list[str] | list[dict[str, object]] | object = UNSET,
     formats: str | list[str] | list[dict[str, object]] | object = UNSET,
     base_dir: str | Path | object = UNSET,
     config_path: str | Path | object = UNSET,
-    n_queries: int | object = UNSET,
+    n_queries: PositiveInt | object = UNSET,
     run_id: str | object = UNSET,
     model_provider: str | object = UNSET,
     planning_model: str | object = UNSET,
@@ -76,8 +75,8 @@ def gen_queries(
         and filesystem paths.
     """
     settings = QueryGenRunSettings.resolve(
-        config=load_config_file(config_path) if config_path is not UNSET else None,
-        env=os.environ,
+        config=load_config_file(cast(str | Path, config_path)) if config_path is not UNSET else None,
+        env=None,
         overrides={
             "spec": {
                 "domain_context": {
