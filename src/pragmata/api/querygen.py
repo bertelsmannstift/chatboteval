@@ -94,7 +94,7 @@ def gen_queries(
     """
     settings = QueryGenRunSettings.resolve(
         config=load_config_file(cast(str | Path, config_path)) if config_path is not UNSET else None,
-        env=None, # Environment-derived settings are not wired for querygen yet.
+        env=None,  # Environment-derived settings are not wired for querygen yet.
         overrides={
             "spec": {
                 "domain_context": {
