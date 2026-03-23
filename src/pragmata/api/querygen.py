@@ -3,7 +3,7 @@
 from pathlib import Path
 from typing import Any, cast
 
-from pydantic import BaseModel, PositiveInt
+from pydantic import BaseModel, ConfigDict, PositiveInt
 
 from pragmata.core.paths.paths import WorkspacePaths
 from pragmata.core.paths.querygen_paths import QueryGenRunPaths, resolve_querygen_paths
@@ -18,6 +18,8 @@ class QueryGenRunResult(BaseModel):
         settings: Fully resolved run settings.
         paths: Filesystem paths for run artifacts.
     """
+
+    model_config = ConfigDict(extra="forbid")
 
     settings: QueryGenRunSettings
     paths: QueryGenRunPaths
@@ -92,7 +94,7 @@ def gen_queries(
     """
     settings = QueryGenRunSettings.resolve(
         config=load_config_file(cast(str | Path, config_path)) if config_path is not UNSET else None,
-        env=None,
+        env=None, # Environment-derived settings are not wired for querygen yet.
         overrides={
             "spec": {
                 "domain_context": {
