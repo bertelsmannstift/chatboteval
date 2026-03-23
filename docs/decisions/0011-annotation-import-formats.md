@@ -6,7 +6,7 @@ Status: Draft
 
 `import_records()` accepts multiple input formats directly — JSON, JSONL, CSV files, HF Datasets, and pandas DataFrames. Format loading is baked into the API layer; CLI remains a thin wrapper per [ADR-0007](0007-packaging-invocation-surface.md).
 
-Previously the import pipeline accepted JSON only ([import pipeline design doc](../design/annotation-import-pipeline.md)), with the rationale that nested chunk structures don't map cleanly to flat CSV rows. This decision expands accepted formats while preserving the canonical schema as the internal validation target.
+Previously import pipeline accepted JSON only ([import pipeline design doc](../design/annotation-import-pipeline.md)) - rationale that nested chunk structures don't map cleanly to flat CSV rows. This expands accepted formats while preserving canonical schema as the internal validation target.
 
 ## Accepted formats
 
@@ -38,6 +38,6 @@ CSV supports two layouts:
 
 - Users can pass common data formats directly without pre-parsing
 - CLI is a thin wrapper: `import_records(client, args.file)` — no format logic in CLI
-- CSV chunk representation is defined (resolves the open question from the original design doc)
+- CSV chunk representation is defined (resolve open question from original design doc)
 - Source-system-specific adapters (e.g. transforming a chatbot's raw output to canonical schema) remain out of scope
 - Adding new formats requires only a new loader function in `core/` and an extension mapping
