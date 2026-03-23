@@ -51,24 +51,40 @@ def gen_queries(
     for the run. It does not yet execute the query generation workflow.
 
     Args:
-        domains: Domain distribution specification.
-        roles: Role distribution specification.
-        languages: Language distribution specification.
-        topics: Topic distribution specification.
-        intents: Intent distribution specification.
-        tasks: Task distribution specification.
-        disallowed_topics: Optional topics excluded from generation.
-        difficulty: Optional difficulty distribution specification.
-        formats: Optional response format distribution specification.
-        base_dir: Optional workspace base directory.
-        config_path: Optional configuration file path.
-        n_queries: Optional number of queries to generate.
-        run_id: Optional run identifier.
-        model_provider: Optional LLM provider name.
-        planning_model: Optional planning model identifier.
-        realization_model: Optional realization model identifier.
-        base_url: Optional provider base URL.
-        model_kwargs: Optional additional model configuration.
+        domains: Domain choices for the generated queries. The domain is the
+            setting or subject area in which a query arises.
+        roles: Role choices for the generated queries. The role is the user
+            persona or perspective from which a query is asked.
+        languages: Language choices for the generated queries. The language is
+            the language in which the realized query should be written.
+        topics: Topic choices for the generated queries. The topic is the
+            concrete subject matter the query concerns.
+        intents: Intent choices for the generated queries. The intent is the
+            underlying user goal or motivation behind the request.
+        tasks: Task choices for the generated queries. The task is the type of
+            information-processing task the user wants performed.
+        disallowed_topics: Optional topics that must not appear in generated queries.
+        difficulty: Optional difficulty choices. This reflects the expected
+            complexity level of the request.
+        formats: Optional format choices. This reflects the expected answer format
+            implied by the request.
+        base_dir: Workspace base directory for run artifacts. Defaults to the
+            current working directory.
+        config_path: Path to a YAML configuration file.
+        n_queries: Number of queries to prepare. Defaults to 50.
+        run_id: Explicit run identifier. Defaults to an auto-generated UUID
+            hex string.
+        model_provider: Chat model provider to use. Defaults to "mistralai".
+            Requires a corresponding API key via environment variables.
+            (e.g., MISTRAL_API_KEY, OPENAI_API_KEY, etc.)
+        planning_model: Model identifier for the planning stage. Defaults to
+            "magistral-medium-latest".
+        realization_model: Model identifier for the realization stage. Defaults
+            to "mistral-medium-latest".
+        base_url: Optional custom API endpoint for the provider (e.g., Azure
+            OpenAI deployments).
+        model_kwargs: Additional provider-specific keyword arguments passed
+            through to the underlying chat model.
 
     Returns:
         QueryGenRunResult: Prepared run state containing resolved settings
