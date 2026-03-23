@@ -1,9 +1,7 @@
 """Unit tests for shared runtime settings resolution helpers and base model."""
 
-import os
 from pathlib import Path
 from typing import Any, NamedTuple
-from unittest.mock import patch
 
 import pytest
 from pydantic import BaseModel, ValidationError
@@ -164,17 +162,18 @@ def test_load_config_file_raises_for_non_mapping_root(tmp_path: Path) -> None:
         load_config_file(path)
 
 
-def test_resolve_provider_api_key_reads_supported_provider_secret() -> None:
+def test_resolve_provider_api_key_reads_supported_provider_secret(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     """resolve_provider_api_key returns the secret for a supported provider."""
-    with patch.dict(os.environ, {"OPENAI_API_KEY": "secret-value"}, clear=True):
-        assert resolve_provider_api_key("openai") == "secret-value"
+    monkeypatch.setenv("OPENAI_API_KEY", "secret-value")
+    assert resolve_provider_api_key("openai") == "secret-value"
 
 
 def test_resolve_provider_api_key_rejects_unsupported_provider() -> None:
     """resolve_provider_api_key raises for unsupported providers."""
-    with patch.dict(os.environ, {}, clear=True):
-        with pytest.raises(ValueError) as exc_info:
-            resolve_provider_api_key("azure_openai")
+    with pytest.raises(ValueError) as exc_info:
+        resolve_provider_api_key("azure_openai")
 
     message = str(exc_info.value)
     assert message.startswith("Unsupported provider: azure_openai.")
@@ -184,18 +183,25 @@ def test_resolve_provider_api_key_rejects_unsupported_provider() -> None:
         assert provider in message
 
 
-def test_resolve_provider_api_key_raises_when_env_var_is_missing() -> None:
+def test_resolve_provider_api_key_raises_when_env_var_is_missing(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     """resolve_provider_api_key raises when the mapped env var is absent."""
-    with patch.dict(os.environ, {}, clear=True):
-        with pytest.raises(MissingSecretError, match="OPENAI_API_KEY"):
-            resolve_provider_api_key("openai")
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+
+    with pytest.raises(MissingSecretError, match="OPENAI_API_KEY"):
+        resolve_provider_api_key("openai")
 
 
-def test_resolve_provider_api_key_raises_when_env_var_is_empty() -> None:
-    """resolve_provider_api_key raises when the mapped env var is empty."""
-    with patch.dict(os.environ, {"OPENAI_API_KEY": ""}, clear=True):
-        with pytest.raises(MissingSecretError, match="OPENAI_API_KEY"):
-            resolve_provider_api_key("openai")
+@pytest.mark.parametrize("value", ["", "   "])
+def test_resolve_provider_api_key_raises_when_env_var_is_blank(
+    monkeypatch: pytest.MonkeyPatch,
+    value: str,
+) -> None:
+    """resolve_provider_api_key raises when the mapped env var is empty or whitespace."""
+    monkeypatch.setenv("OPENAI_API_KEY", value)
+    with pytest.raises(MissingSecretError, match="OPENAI_API_KEY"):
+        resolve_provider_api_key("openai")
 
 
 def test_provider_api_key_env_vars_maps_supported_querygen_providers() -> None:
@@ -208,10 +214,3 @@ def test_provider_api_key_env_vars_maps_supported_querygen_providers() -> None:
         "anthropic": "ANTHROPIC_API_KEY",
         "google-genai": "GOOGLE_API_KEY",
     }
-
-
-def test_resolve_provider_api_key_raises_when_env_var_is_whitespace() -> None:
-    """resolve_provider_api_key raises when the mapped env var is only whitespace."""
-    with patch.dict(os.environ, {"OPENAI_API_KEY": "   "}, clear=True):
-        with pytest.raises(MissingSecretError, match="OPENAI_API_KEY"):
-            resolve_provider_api_key("openai")
