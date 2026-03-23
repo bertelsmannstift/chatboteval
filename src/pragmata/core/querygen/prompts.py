@@ -36,7 +36,7 @@ Your detailed task entails two tightly coupled components:
   - Ensure every candidate conforms exactly to the structured output schema.
   - Generate blueprints only and do not realize them into final user-facing queries.
 
-Taken together, each candidate blueprint is constructed by sampling one value from each dimension and combining the \
+Taken together, each candidate blueprint is constructed by sampling across the provided dimensions and combining the \
 sampled values into a coherent query specification.
 
 All generated blueprints must satisfy the quality criteria and behavioral guardrails defined in the CONSTRAINTS \
@@ -183,7 +183,7 @@ user queries.
 
 QUERY BLUEPRINTS
 
-{query blueprints}
+{query_blueprints}
 
 TASK
 
