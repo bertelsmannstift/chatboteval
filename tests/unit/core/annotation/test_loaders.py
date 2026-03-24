@@ -4,17 +4,18 @@ No Argilla server required — tests exercise pure Python loading logic.
 """
 
 import json
+import types
 from pathlib import Path
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 
 from pragmata.core.annotation.loaders import (
-    load_csv,
-    load_dataframe,
-    load_hf_dataset,
-    load_json,
-    load_jsonl,
+    _load_csv,
+    _load_dataframe,
+    _load_hf_dataset,
+    _load_json,
+    _load_jsonl,
     resolve_records,
 )
 
@@ -47,73 +48,73 @@ def _write_jsonl(path: Path, records: list[dict]) -> Path:
 
 
 # ---------------------------------------------------------------------------
-# load_json
+# _load_json
 # ---------------------------------------------------------------------------
 
 
 class TestLoadJson:
     def test_loads_array(self, tmp_path: Path) -> None:
         f = _write_json(tmp_path / "data.json", [_RECORD])
-        result = load_json(f)
+        result = _load_json(f)
         assert len(result) == 1
         assert result[0]["query"] == "What is the capital?"
 
     def test_multiple_records(self, tmp_path: Path) -> None:
         f = _write_json(tmp_path / "data.json", [_RECORD, _RECORD])
-        assert len(load_json(f)) == 2
+        assert len(_load_json(f)) == 2
 
     def test_empty_array(self, tmp_path: Path) -> None:
         f = _write_json(tmp_path / "data.json", [])
-        assert load_json(f) == []
+        assert _load_json(f) == []
 
     def test_rejects_non_array(self, tmp_path: Path) -> None:
         f = tmp_path / "data.json"
         f.write_text(json.dumps({"not": "an array"}))
         with pytest.raises(ValueError, match="Expected JSON array"):
-            load_json(f)
+            _load_json(f)
 
 
 # ---------------------------------------------------------------------------
-# load_jsonl
+# _load_jsonl
 # ---------------------------------------------------------------------------
 
 
 class TestLoadJsonl:
     def test_loads_lines(self, tmp_path: Path) -> None:
         f = _write_jsonl(tmp_path / "data.jsonl", [_RECORD])
-        result = load_jsonl(f)
+        result = _load_jsonl(f)
         assert len(result) == 1
         assert result[0]["query"] == "What is the capital?"
 
     def test_multiple_lines(self, tmp_path: Path) -> None:
         f = _write_jsonl(tmp_path / "data.jsonl", [_RECORD, _RECORD])
-        assert len(load_jsonl(f)) == 2
+        assert len(_load_jsonl(f)) == 2
 
     def test_skips_blank_lines(self, tmp_path: Path) -> None:
         f = tmp_path / "data.jsonl"
         f.write_text(json.dumps(_RECORD) + "\n\n" + json.dumps(_RECORD) + "\n")
-        assert len(load_jsonl(f)) == 2
+        assert len(_load_jsonl(f)) == 2
 
     def test_empty_file(self, tmp_path: Path) -> None:
         f = tmp_path / "data.jsonl"
         f.write_text("")
-        assert load_jsonl(f) == []
+        assert _load_jsonl(f) == []
 
     def test_rejects_invalid_json(self, tmp_path: Path) -> None:
         f = tmp_path / "data.jsonl"
         f.write_text("not json\n")
         with pytest.raises(ValueError, match="Invalid JSON on line 1"):
-            load_jsonl(f)
+            _load_jsonl(f)
 
     def test_rejects_non_object_line(self, tmp_path: Path) -> None:
         f = tmp_path / "data.jsonl"
         f.write_text("[1,2,3]\n")
         with pytest.raises(ValueError, match="Expected JSON object on line 1"):
-            load_jsonl(f)
+            _load_jsonl(f)
 
 
 # ---------------------------------------------------------------------------
-# load_csv — JSON string column
+# _load_csv — JSON string column
 # ---------------------------------------------------------------------------
 
 
@@ -136,7 +137,7 @@ class TestLoadCsvJsonColumn:
             "context_set": "ctx-001",
         }
         f = self._write_csv(tmp_path / "data.csv", [row])
-        result = load_csv(f)
+        result = _load_csv(f)
         assert len(result) == 1
         assert isinstance(result[0]["chunks"], list)
         assert result[0]["chunks"][0]["chunk_id"] == "c1"
@@ -149,22 +150,22 @@ class TestLoadCsvJsonColumn:
             "context_set": "ctx",
         }
         f = self._write_csv(tmp_path / "data.csv", [row, row])
-        assert len(load_csv(f)) == 2
+        assert len(_load_csv(f)) == 2
 
     def test_empty_csv(self, tmp_path: Path) -> None:
         f = tmp_path / "data.csv"
         f.write_text("query,answer,chunks\n")
-        assert load_csv(f) == []
+        assert _load_csv(f) == []
 
     def test_invalid_json_in_chunks(self, tmp_path: Path) -> None:
         row = {"query": "Q", "answer": "A", "chunks": "not json", "context_set": "ctx"}
         f = self._write_csv(tmp_path / "data.csv", [row])
         with pytest.raises(ValueError, match="Invalid JSON in 'chunks' column"):
-            load_csv(f)
+            _load_csv(f)
 
 
 # ---------------------------------------------------------------------------
-# load_csv — denormalised rows
+# _load_csv — denormalised rows
 # ---------------------------------------------------------------------------
 
 
@@ -213,7 +214,7 @@ class TestLoadCsvDenormalised:
             },
         ]
         f = self._write_csv(tmp_path / "data.csv", rows)
-        result = load_csv(f)
+        result = _load_csv(f)
         assert len(result) == 2
         assert len(result[0]["chunks"]) == 2
         assert len(result[1]["chunks"]) == 1
@@ -240,7 +241,7 @@ class TestLoadCsvDenormalised:
             },
         ]
         f = self._write_csv(tmp_path / "data.csv", rows)
-        result = load_csv(f)
+        result = _load_csv(f)
         assert len(result) == 1
         assert len(result[0]["chunks"]) == 2
 
@@ -257,7 +258,7 @@ class TestLoadCsvDenormalised:
             },
         ]
         f = self._write_csv(tmp_path / "data.csv", rows)
-        result = load_csv(f)
+        result = _load_csv(f)
         assert result[0]["chunks"][0]["chunk_rank"] == 3
 
     def test_group_column_excluded_from_record(self, tmp_path: Path) -> None:
@@ -274,18 +275,18 @@ class TestLoadCsvDenormalised:
             },
         ]
         f = self._write_csv(tmp_path / "data.csv", rows)
-        result = load_csv(f)
+        result = _load_csv(f)
         assert "record_id" not in result[0]
 
     def test_rejects_csv_without_chunks_or_chunk_columns(self, tmp_path: Path) -> None:
         f = tmp_path / "data.csv"
         f.write_text("query,answer\nQ,A\n")
         with pytest.raises(ValueError, match="CSV must have either"):
-            load_csv(f)
+            _load_csv(f)
 
 
 # ---------------------------------------------------------------------------
-# load_hf_dataset
+# _load_hf_dataset
 # ---------------------------------------------------------------------------
 
 
@@ -293,7 +294,7 @@ class TestLoadHfDataset:
     def test_uses_to_list(self) -> None:
         mock_ds = MagicMock()
         mock_ds.to_list.return_value = [_RECORD]
-        result = load_hf_dataset(mock_ds)
+        result = _load_hf_dataset(mock_ds)
         assert result == [_RECORD]
         mock_ds.to_list.assert_called_once()
 
@@ -302,12 +303,12 @@ class TestLoadHfDataset:
             def __iter__(self):
                 return iter([_RECORD])
 
-        result = load_hf_dataset(IterableDataset())
+        result = _load_hf_dataset(IterableDataset())
         assert len(result) == 1
 
 
 # ---------------------------------------------------------------------------
-# load_dataframe
+# _load_dataframe
 # ---------------------------------------------------------------------------
 
 
@@ -315,7 +316,7 @@ class TestLoadDataframe:
     def test_calls_to_dict_records(self) -> None:
         mock_df = MagicMock()
         mock_df.to_dict.return_value = [_RECORD]
-        result = load_dataframe(mock_df)
+        result = _load_dataframe(mock_df)
         assert result == [_RECORD]
         mock_df.to_dict.assert_called_once_with("records")
 
@@ -369,17 +370,23 @@ class TestResolveRecords:
             resolve_records("/nonexistent/data.json")
 
     def test_hf_dataset(self) -> None:
-        mock_ds = MagicMock()
-        mock_ds.to_list.return_value = [_RECORD]
-        type(mock_ds).__name__ = "Dataset"
-        result = resolve_records(mock_ds)
+        FakeDataset = type("Dataset", (), {"to_list": lambda self: [_RECORD]})
+        fake_ds = FakeDataset()
+        fake_mod = types.ModuleType("datasets")
+        fake_mod.Dataset = FakeDataset  # type: ignore[attr-defined]
+
+        with patch.dict("sys.modules", {"datasets": fake_mod}):
+            result = resolve_records(fake_ds)
         assert result == [_RECORD]
 
     def test_dataframe(self) -> None:
-        mock_df = MagicMock()
-        mock_df.to_dict.return_value = [_RECORD]
-        type(mock_df).__name__ = "DataFrame"
-        result = resolve_records(mock_df)
+        FakeDataFrame = type("DataFrame", (), {"to_dict": lambda self, orient: [_RECORD]})
+        fake_df = FakeDataFrame()
+        fake_mod = types.ModuleType("pandas")
+        fake_mod.DataFrame = FakeDataFrame  # type: ignore[attr-defined]
+
+        with patch.dict("sys.modules", {"pandas": fake_mod}):
+            result = resolve_records(fake_df)
         assert result == [_RECORD]
 
     def test_unsupported_type(self) -> None:
