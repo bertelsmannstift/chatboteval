@@ -14,7 +14,7 @@ from pragmata.core.schemas.annotation_export import (
 )
 from pragmata.core.schemas.annotation_task import Task
 
-_NOW = datetime(2024, 1, 1, 12, 0, 0)
+_NOW = datetime.now()
 
 _BASE = {
     "record_uuid": "abc123",
