@@ -3,7 +3,7 @@
 import logging
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import cast
+from typing import TypedDict, cast
 from uuid import UUID
 
 import argilla as rg
@@ -26,6 +26,17 @@ from pragmata.core.settings.settings_base import UNSET, load_config_file
 logger = logging.getLogger(__name__)
 
 AnnotationModel = RetrievalAnnotation | GroundingAnnotation | GenerationAnnotation
+
+
+class _BaseFields(TypedDict):
+    record_uuid: str
+    annotator_id: str
+    language: str | None
+    inserted_at: datetime
+    created_at: datetime
+    record_status: str
+    notes: str
+
 
 _TASK_CSV_PATH = {
     Task.RETRIEVAL: "retrieval_csv",
@@ -93,7 +104,7 @@ def _fetch_task(
             annotator_id = user_lookup.get(user_id, str(user_id))
             notes = answers.get("notes") or ""
 
-            base = dict(
+            base = _BaseFields(
                 record_uuid=record_uuid,
                 annotator_id=annotator_id,
                 language=language,
@@ -105,7 +116,7 @@ def _fetch_task(
 
             if task == Task.RETRIEVAL:
                 row: AnnotationModel = RetrievalAnnotation(
-                    **base,  # type: ignore[arg-type]
+                    **base,
                     query=record.fields["query"],
                     chunk=record.fields["chunk"],
                     chunk_id=record.metadata.get("chunk_id", ""),
@@ -117,7 +128,7 @@ def _fetch_task(
                 )
             elif task == Task.GROUNDING:
                 row = GroundingAnnotation(
-                    **base,  # type: ignore[arg-type]
+                    **base,
                     answer=record.fields["answer"],
                     context_set=record.fields["context_set"],
                     support_present=_to_bool(answers["support_present"]),
@@ -128,7 +139,7 @@ def _fetch_task(
                 )
             else:  # GENERATION
                 row = GenerationAnnotation(
-                    **base,  # type: ignore[arg-type]
+                    **base,
                     query=record.fields["query"],
                     answer=record.fields["answer"],
                     proper_action=_to_bool(answers["proper_action"]),
