@@ -124,13 +124,6 @@ def _setup_dataset(client: MagicMock, task: Task, records: list[MagicMock]) -> N
     dataset = MagicMock()
     dataset.records.return_value = iter(records)
 
-    original_datasets = client.datasets.side_effect
-
-    calls: dict[str, MagicMock] = {}
-    if original_datasets is not None:
-        # already set up — preserve previous registrations
-        pass
-
     task_name_map = {
         Task.RETRIEVAL: "task_retrieval",
         Task.GROUNDING: "task_grounding",
@@ -169,16 +162,8 @@ class TestExportAnnotations:
             responses=_make_retrieval_responses(user_id),
             status="submitted",
         )
-        draft = _make_record(
-            fields=RETRIEVAL_FIELDS,
-            metadata=BASE_METADATA,
-            responses=_make_retrieval_responses(user_id),
-            status="draft",
-        )
-
         dataset = MagicMock()
-        # Submitted-only records should come from the query filter on the SDK side
-        # Our mock returns only submitted records (simulating SDK filter)
+        # Mock returns only submitted records (simulating SDK status filter)
         dataset.records.return_value = iter([submitted])
         client = MagicMock()
         user = MagicMock()
