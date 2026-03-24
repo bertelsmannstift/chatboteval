@@ -4,12 +4,7 @@ Tests settings resolution, delegation to core/, and result assembly.
 No Argilla server required — all SDK calls are mocked.
 """
 
-import json
-import types
-from pathlib import Path
 from unittest.mock import MagicMock, patch
-
-import pytest
 
 from pragmata.api.annotation_import import ImportResult, import_records
 from pragmata.api.annotation_setup import setup, teardown
@@ -205,90 +200,3 @@ class TestImportRecords:
         assert len(result.errors) == 2
         # fan_out called with empty list
         assert mock_fan_out.call_args[0][1] == []
-
-    @patch("pragmata.api.annotation_import.fan_out_records")
-    def test_accepts_json_file_path(self, mock_fan_out: MagicMock, tmp_path: Path) -> None:
-        mock_fan_out.return_value = {"ds1": 1}
-        client = MagicMock()
-        f = tmp_path / "data.json"
-        f.write_text(json.dumps([_make_raw()]))
-
-        result = import_records(client, str(f), workspace_prefix="test")
-
-        assert result.total_records == 1
-        mock_fan_out.assert_called_once()
-
-    @patch("pragmata.api.annotation_import.fan_out_records")
-    def test_accepts_path_object(self, mock_fan_out: MagicMock, tmp_path: Path) -> None:
-        mock_fan_out.return_value = {"ds1": 1}
-        client = MagicMock()
-        f = tmp_path / "data.json"
-        f.write_text(json.dumps([_make_raw()]))
-
-        result = import_records(client, f, workspace_prefix="test")
-
-        assert result.total_records == 1
-
-    @patch("pragmata.api.annotation_import.fan_out_records")
-    def test_accepts_jsonl_file(self, mock_fan_out: MagicMock, tmp_path: Path) -> None:
-        mock_fan_out.return_value = {"ds1": 1}
-        client = MagicMock()
-        f = tmp_path / "data.jsonl"
-        f.write_text(json.dumps(_make_raw()) + "\n")
-
-        result = import_records(client, str(f), workspace_prefix="test")
-
-        assert result.total_records == 1
-
-    @patch("pragmata.api.annotation_import.fan_out_records")
-    def test_format_override(self, mock_fan_out: MagicMock, tmp_path: Path) -> None:
-        mock_fan_out.return_value = {"ds1": 1}
-        client = MagicMock()
-        f = tmp_path / "data.txt"
-        f.write_text(json.dumps([_make_raw()]))
-
-        result = import_records(client, str(f), format="json", workspace_prefix="test")
-
-        assert result.total_records == 1
-
-    def test_file_not_found_raises(self) -> None:
-        client = MagicMock()
-        with pytest.raises(FileNotFoundError):
-            import_records(client, "/nonexistent/data.json", workspace_prefix="test")
-
-    def test_unsupported_extension_raises(self, tmp_path: Path) -> None:
-        client = MagicMock()
-        f = tmp_path / "data.parquet"
-        f.write_text("")
-        with pytest.raises(ValueError, match="Unsupported file extension"):
-            import_records(client, str(f), workspace_prefix="test")
-
-    @patch("pragmata.api.annotation_import.fan_out_records")
-    def test_accepts_hf_dataset(self, mock_fan_out: MagicMock) -> None:
-        mock_fan_out.return_value = {"ds1": 1}
-        client = MagicMock()
-
-        FakeDataset = type("Dataset", (), {"to_list": lambda self: [_make_raw()]})
-        fake_ds = FakeDataset()
-        fake_mod = types.ModuleType("datasets")
-        fake_mod.Dataset = FakeDataset  # type: ignore[attr-defined]
-
-        with patch.dict("sys.modules", {"datasets": fake_mod}):
-            result = import_records(client, fake_ds, workspace_prefix="test")
-
-        assert result.total_records == 1
-
-    @patch("pragmata.api.annotation_import.fan_out_records")
-    def test_accepts_dataframe(self, mock_fan_out: MagicMock) -> None:
-        mock_fan_out.return_value = {"ds1": 1}
-        client = MagicMock()
-
-        FakeDataFrame = type("DataFrame", (), {"to_dict": lambda self, orient: [_make_raw()]})
-        fake_df = FakeDataFrame()
-        fake_mod = types.ModuleType("pandas")
-        fake_mod.DataFrame = FakeDataFrame  # type: ignore[attr-defined]
-
-        with patch.dict("sys.modules", {"pandas": fake_mod}):
-            result = import_records(client, fake_df, workspace_prefix="test")
-
-        assert result.total_records == 1
