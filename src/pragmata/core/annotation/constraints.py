@@ -45,7 +45,6 @@ def check_generation(row: GenerationAnnotation) -> list[str]:  # noqa: ARG001
     return []
 
 
-# Consumed by the export writer (not yet built) to validate rows per task.
 CONSTRAINT_CHECKERS: dict[Task, Callable] = {
     Task.RETRIEVAL: check_retrieval,
     Task.GROUNDING: check_grounding,
