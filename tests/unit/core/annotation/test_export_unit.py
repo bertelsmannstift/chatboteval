@@ -235,8 +235,8 @@ class TestExportAnnotations:
         result = export_annotations(mock_client, workspace, export_id="test-run", tasks=[Task.RETRIEVAL])
         csv_path = result.files[Task.RETRIEVAL]
         rows = list(csv.DictReader(csv_path.open()))
-        assert rows[0]["topically_relevant"] == "True"
-        assert rows[0]["evidence_sufficient"] == "False"
+        assert rows[0]["topically_relevant"] == "true"
+        assert rows[0]["evidence_sufficient"] == "false"
 
     def test_empty_dataset_produces_headers_only_csv(self, workspace: WorkspacePaths, mock_client: MagicMock) -> None:
         """Zero submitted records → CSV with headers, row_count=0."""
