@@ -2,7 +2,7 @@
 
 import json
 
-from pragmata.core.settings.settings_base import UNSET
+from pragmata.api.querygen import UNSET
 
 
 def parse_optional_cli_value(value: str | None) -> object:

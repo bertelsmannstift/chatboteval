@@ -138,3 +138,4 @@ def gen_queries(
     ).ensure_dirs()
 
     return QueryGenRunResult(settings=settings, paths=paths)
+__all__ = ["gen_queries", "QueryGenRunResult", "UNSET"]
