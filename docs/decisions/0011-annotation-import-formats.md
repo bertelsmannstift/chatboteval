@@ -4,8 +4,10 @@ Status: Draft
 
 ## Decision
 
-`import_records()` accepts multiple input formats directly — JSON, JSONL, CSV files, HF Datasets, and pandas DataFrames. Format loading is baked into the API layer; CLI remains a thin wrapper per [ADR-0007](0007-packaging-invocation-surface.md).
+`import_records()` accepts multiple input formats directly — JSON, JSONL, CSV files, HF Datasets, and pandas DataFrames. Format loading is handled by the API layer; CLI remains a thin wrapper per [ADR-0007](0007-packaging-invocation-surface.md).
 
+
+## Context
 Previously the import pipeline accepted JSON only ([import pipeline design doc](../design/annotation-import-pipeline.md)), with the rationale that nested chunk structures don't map cleanly to flat CSV rows. This decision expands accepted formats while preserving the canonical schema as the internal validation target.
 
 ## Accepted formats
