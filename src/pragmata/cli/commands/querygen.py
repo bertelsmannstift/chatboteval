@@ -38,7 +38,8 @@ def gen_queries_command(
     model_kwargs: str | None = typer.Option(
         None,
         "--model-kwargs",
-        help="Additional model keyword arguments as a JSON object.",),
+        help="Additional model keyword arguments as a JSON object.",
+    ),
 ) -> None:
     """Prepare a synthetic query generation run."""
     result = querygen.gen_queries(
