@@ -1,6 +1,5 @@
 """Tests CLI command for synthetic query generation."""
 
-import re
 from pathlib import Path
 
 from typer.testing import CliRunner
@@ -9,12 +8,6 @@ from pragmata.api.querygen import UNSET
 from pragmata.cli.app import app
 
 runner = CliRunner()
-
-ANSI_ESCAPE_RE = re.compile(r"\x1b\[[0-9;]*m")
-
-
-def strip_ansi(text: str) -> str:
-    return ANSI_ESCAPE_RE.sub("", text)
 
 
 class _PreparedResult:
@@ -38,13 +31,12 @@ def test_querygen_command_registered() -> None:
 
 
 def test_querygen_gen_queries_help_available() -> None:
-    result = runner.invoke(app, ["querygen", "gen-queries", "--help"])
-    output = strip_ansi(result.output)
+    result = runner.invoke(app, ["querygen", "gen-queries", "--help"], color=False)
 
     assert result.exit_code == 0
-    assert "Prepare a synthetic query generation run." in output
-    assert "--domains" in output
-    assert "--run-id" in output
+    assert "Prepare a synthetic query generation run." in result.output
+    assert "--domains" in result.output
+    assert "--run-id" in result.output
 
 
 def test_querygen_cli_delegates_to_public_api(monkeypatch) -> None:
