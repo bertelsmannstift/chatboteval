@@ -35,10 +35,10 @@ def _to_bool(value: str) -> bool:
     return value == "yes"
 
 
-def _group_responses_by_user(record: object) -> dict[UUID, dict[str, str]]:
+def _group_responses_by_user(record: rg.Record) -> dict[UUID, dict[str, str]]:
     """Group record.responses by user_id -> {question_name: value}."""
     grouped: dict[UUID, dict[str, str]] = {}
-    for resp in record.responses:  # type: ignore[attr-defined]
+    for resp in record.responses:
         uid: UUID = resp.user_id
         grouped.setdefault(uid, {})[resp.question_name] = resp.value
     return grouped
