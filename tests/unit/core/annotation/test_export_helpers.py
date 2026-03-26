@@ -172,9 +172,9 @@ class TestExportResult:
     def test_constructable(self, tmp_path: Path) -> None:
         paths = AnnotationExportPaths(
             export_dir=tmp_path,
-            retrieval_csv=tmp_path / "retrieval.csv",
-            grounding_csv=tmp_path / "grounding.csv",
-            generation_csv=tmp_path / "generation.csv",
+            retrieval_annotation_csv=tmp_path / "retrieval.csv",
+            grounding_annotation_csv=tmp_path / "grounding.csv",
+            generation_annotation_csv=tmp_path / "generation.csv",
         )
         result = ExportResult(
             paths=paths,
@@ -188,9 +188,9 @@ class TestExportResult:
     def test_frozen(self, tmp_path: Path) -> None:
         paths = AnnotationExportPaths(
             export_dir=tmp_path,
-            retrieval_csv=tmp_path / "retrieval.csv",
-            grounding_csv=tmp_path / "grounding.csv",
-            generation_csv=tmp_path / "generation.csv",
+            retrieval_annotation_csv=tmp_path / "retrieval.csv",
+            grounding_annotation_csv=tmp_path / "grounding.csv",
+            generation_annotation_csv=tmp_path / "generation.csv",
         )
         result = ExportResult(
             paths=paths,
