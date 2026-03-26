@@ -46,6 +46,7 @@ def test_querygen_run_settings_construction_with_defaults() -> None:
     assert isinstance(settings.base_dir, Path)
     assert settings.run_id
     assert settings.n_queries == 50
+    assert settings.batch_size == 25
 
 
 def test_querygen_run_settings_resolve_deep_merges_nested_llm_settings() -> None:
@@ -115,3 +116,11 @@ def test_querygen_run_settings_model_kwargs_merge_semantics() -> None:
         "top_p": 0.9,
         "max_tokens": 300,
     }
+
+
+def test_querygen_run_settings_accepts_batch_size_override() -> None:
+    settings = QueryGenRunSettings.model_validate(
+        {"spec": _valid_spec_payload(), "batch_size": 10}
+    )
+
+    assert settings.batch_size == 10

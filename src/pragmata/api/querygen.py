@@ -45,6 +45,7 @@ def gen_queries(
     realization_model: str | object = UNSET,
     base_url: str | object = UNSET,
     model_kwargs: dict[str, Any] | object = UNSET,
+    batch_size: PositiveInt | object = UNSET,
 ) -> QueryGenRunResult:
     """Prepare a synthetic query generation run.
 
@@ -74,6 +75,7 @@ def gen_queries(
             current working directory.
         config_path: Path to a YAML configuration file.
         n_queries: Number of queries to prepare. Defaults to 50.
+        batch_size: Number of candidates to group into each workflow batch. Defaults to 25.
         run_id: Explicit run identifier. Defaults to an auto-generated UUID
             hex string.
         model_provider: Chat model provider to use. Defaults to "mistralai".
@@ -127,6 +129,7 @@ def gen_queries(
             "base_dir": base_dir,
             "run_id": run_id,
             "n_queries": n_queries,
+            "batch_size": batch_size,
         },
     )
 
