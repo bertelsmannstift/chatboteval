@@ -102,10 +102,16 @@ specification
 - Do not output realized natural-language user queries in this stage
 """
 
-USER_PROMPT_PLANNING = """The following is the structured query-generation specification, providing the target \
-distribution for candidate query blueprints.
+USER_PROMPT_PLANNING = """CONTEXT
+
+The following is the list of candidate IDs. Each ID corresponds to exactly one candidate blueprint.
+
+- candidate_ids: {candidate_ids}
 
 QUERY-GENERATION SPECIFICATION
+
+The following is the structured query-generation specification, providing the target \
+distribution for candidate query blueprints.
 
 - Domain context:
   - domains: {domains}
@@ -128,7 +134,7 @@ QUERY-GENERATION SPECIFICATION
 
 TASK
 
-Generate {n_queries} candidate query blueprints from this specification.
+Generate {n_queries} candidate query blueprints from this specification, using exactly the provided candidate IDs.
 """
 
 SYSTEM_PROMPT_REALIZATION = """ROLE
