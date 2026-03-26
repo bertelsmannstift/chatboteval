@@ -1,5 +1,6 @@
 """Annotation export API — thin orchestration over core/ implementation."""
 
+from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import cast
@@ -7,12 +8,30 @@ from typing import cast
 import argilla as rg
 
 from pragmata.core.annotation.export_fetcher import AnnotationModel, build_user_lookup, fetch_task
-from pragmata.core.annotation.export_helpers import ExportResult, write_export_csv
+from pragmata.core.annotation.export_helpers import write_export_csv
 from pragmata.core.paths.annotation_paths import AnnotationExportPaths, resolve_export_paths
 from pragmata.core.paths.paths import WorkspacePaths
 from pragmata.core.schemas.annotation_task import Task
 from pragmata.core.settings.annotation_settings import AnnotationSettings
 from pragmata.core.settings.settings_base import UNSET, load_config_file
+
+
+@dataclass(frozen=True)
+class ExportResult:
+    """Result of a completed annotation export.
+
+    Attributes:
+        paths: Path bundle used for this export.
+        files: Mapping of task to written CSV file path.
+        row_counts: Number of rows written per task.
+        constraint_summary: Violation count per rule name.
+    """
+
+    paths: AnnotationExportPaths
+    files: dict[Task, Path]
+    row_counts: dict[Task, int]
+    constraint_summary: dict[str, int]
+
 
 _TASK_CSV_ATTR = {
     Task.RETRIEVAL: "retrieval_csv",
