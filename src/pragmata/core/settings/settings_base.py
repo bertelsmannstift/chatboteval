@@ -16,6 +16,9 @@ class _UnsetType:
     def __repr__(self) -> str:
         return "UNSET"
 
+    def __bool__(self) -> bool:
+        raise TypeError("UNSET has no truth value. Use explicit checks: `x is UNSET` (omitted) or `x is not UNSET`.")
+
 
 UNSET: Final[_UnsetType] = _UnsetType()
 type Unset = _UnsetType
@@ -79,10 +82,10 @@ def prune_unset(
 ) -> Any:
     """Recursively remove values marked as UNSET from override data."""
     if isinstance(value, dict):
-        return {key: prune_unset(item) for key, item in value.items() if item is not UNSET}
+        return {key: prune_unset(item) for key, item in value.items() if not isinstance(item, _UnsetType)}
 
     if isinstance(value, list):
-        return [prune_unset(item) for item in value if item is not UNSET]
+        return [prune_unset(item) for item in value if not isinstance(item, _UnsetType)]
 
     return value
 
