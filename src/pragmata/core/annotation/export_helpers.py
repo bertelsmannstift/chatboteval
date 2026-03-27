@@ -1,9 +1,7 @@
-"""Export CSV writer with post-hoc constraint columns and ExportResult type."""
+"""Export CSV writer with post-hoc constraint columns."""
 
 import csv
-from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 from pragmata.core.csv_io import _to_csv_value
 from pragmata.core.schemas.annotation_export import (
@@ -14,31 +12,11 @@ from pragmata.core.schemas.annotation_export import (
 )
 from pragmata.core.schemas.annotation_task import Task
 
-if TYPE_CHECKING:
-    from pragmata.core.paths.annotation_paths import AnnotationExportPaths
-
 _TASK_SCHEMA: dict[Task, type[AnnotationBase]] = {
     Task.RETRIEVAL: RetrievalAnnotation,
     Task.GROUNDING: GroundingAnnotation,
     Task.GENERATION: GenerationAnnotation,
 }
-
-
-@dataclass(frozen=True)
-class ExportResult:
-    """Result of a completed annotation export.
-
-    Attributes:
-        paths: Path bundle used for this export.
-        files: Mapping of task to written CSV file path.
-        row_counts: Number of rows written per task.
-        constraint_summary: Violation count per rule name.
-    """
-
-    paths: "AnnotationExportPaths"
-    files: dict[Task, Path]
-    row_counts: dict[Task, int]
-    constraint_summary: dict[str, int]
 
 
 def write_export_csv(

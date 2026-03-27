@@ -6,7 +6,8 @@ from pathlib import Path
 
 import pytest
 
-from pragmata.core.annotation.export_helpers import ExportResult, write_export_csv
+from pragmata.api.annotation_export import ExportResult
+from pragmata.core.annotation.export_helpers import write_export_csv
 from pragmata.core.paths.annotation_paths import AnnotationExportPaths
 from pragmata.core.schemas.annotation_export import (
     GroundingAnnotation,
