@@ -175,3 +175,32 @@ def test_build_llm_runnable_propagates_init_error(
             base_url=None,
             model_kwargs={},
         )
+
+@pytest.mark.parametrize(
+    "reserved_key",
+    ["api_key", "base_url", "model", "model_provider", "rate_limiter"],
+)
+def test_build_llm_runnable_rejects_reserved_model_kwargs(
+    mock_llm_setup: dict[str, Any],
+    reserved_key: str,
+) -> None:
+    """Reserved init kwargs cannot be overridden via model_kwargs."""
+    with pytest.raises(
+        ValueError,
+        match=rf"model_kwargs must not override core LLM settings: {reserved_key}",
+    ):
+        build_llm_runnable(
+            system_text="s",
+            user_text="u",
+            model_provider="openai",
+            model="gpt-4o",
+            api_key="sk-test",
+            output_schema=_DummyOutputSchema,
+            requests_per_second=1.0,
+            check_every_n_seconds=1.0,
+            max_bucket_size=1,
+            base_url=None,
+            model_kwargs={reserved_key: "override"},
+        )
+
+    mock_llm_setup["init"].assert_not_called()
